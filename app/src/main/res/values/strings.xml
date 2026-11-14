@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ratti</string>
+    <string name="tab_inicio">Inicio</string>
+    <string name="tab_ahorros">Ahorros</string>
+    <string name="tab_historial">Historial</string>
 </resources>
