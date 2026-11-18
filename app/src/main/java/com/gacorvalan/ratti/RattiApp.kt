@@ -1,21 +1,22 @@
 package com.gacorvalan.ratti
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,24 +27,31 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.ui.theme.RattiColor
+import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
+import com.gacorvalan.ratti.ui.theme.RattiTabMetrics
 import com.gacorvalan.ratti.ui.theme.RattiTheme
 
 private enum class RattiTab(
     @StringRes val titleRes: Int,
-    val icon: ImageVector,
+    @DrawableRes val iconRes: Int,
 ) {
-    Inicio(R.string.tab_inicio, Icons.Rounded.Home),
-    Ahorros(R.string.tab_ahorros, Icons.Rounded.Savings),
-    Historial(R.string.tab_historial, Icons.Rounded.History),
+    Inicio(R.string.tab_inicio, R.drawable.ic_tab_inicio),
+    Ahorros(R.string.tab_ahorros, R.drawable.ic_tab_ahorros),
+    Historial(R.string.tab_historial, R.drawable.ic_tab_historial),
 }
+
+private val TabShape = RoundedCornerShape(RattiRadius.full)
 
 @Composable
 fun RattiApp() {
@@ -69,10 +77,13 @@ private fun PantallaVacia(title: String) {
     Text(
         text = title,
         modifier = Modifier
+            .fillMaxSize()
             .statusBarsPadding()
             .padding(
-                horizontal = RattiSpace.screenMargin,
-                vertical = RattiSpace.sectionGap,
+                start = RattiSpace.screenMargin,
+                end = RattiSpace.screenMargin,
+                top = RattiSpace.sectionGap,
+                bottom = RattiSpace.contentBottom,
             ),
         style = MaterialTheme.typography.headlineLarge,
         color = MaterialTheme.colorScheme.onBackground,
@@ -87,16 +98,26 @@ private fun RattiTabBar(
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(
-                start = RattiSpace.screenMargin,
-                end = RattiSpace.screenMargin,
-                bottom = RattiSpace.sectionGap,
+            .padding(bottom = RattiTabMetrics.aboveNavigation)
+            .width(RattiTabMetrics.width)
+            .height(RattiTabMetrics.height)
+            .dropShadow(
+                shape = TabShape,
+                shadow = Shadow(
+                    radius = RattiTabMetrics.shadowBlur,
+                    spread = 0.dp,
+                    offset = DpOffset(0.dp, RattiTabMetrics.shadowOffsetY),
+                    color = RattiColor.Ink14,
+                ),
             )
-            .shadow(elevation = 16.dp, shape = CircleShape)
-            .background(RattiColor.Blanco, CircleShape)
-            .padding(RattiSpace.sectionInner),
+            .border(RattiTabMetrics.stroke, RattiColor.Ink, TabShape)
+            .background(RattiColor.White, TabShape)
+            .padding(
+                horizontal = RattiTabMetrics.paddingHorizontal,
+                vertical = RattiTabMetrics.paddingVertical,
+            ),
+        horizontalArrangement = Arrangement.spacedBy(RattiTabMetrics.gap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RattiTab.entries.forEach { tab ->
@@ -104,7 +125,6 @@ private fun RattiTabBar(
                 tab = tab,
                 selected = tab == selected,
                 onClick = { onSelect(tab) },
-                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -115,40 +135,31 @@ private fun RattiTabButton(
     tab: RattiTab,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
+        modifier = Modifier
+            .size(RattiTabMetrics.item)
             .selectable(
                 selected = selected,
                 onClick = onClick,
                 role = Role.Tab,
             )
-            .padding(vertical = RattiSpace.sectionInner),
+            .background(
+                color = if (selected) RattiColor.Lime else Color.Transparent,
+                shape = CircleShape,
+            ),
         contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    color = if (selected) RattiColor.Lima else RattiColor.Blanco,
-                    shape = CircleShape,
-                )
-                .padding(
-                    horizontal = RattiSpace.rowPadding,
-                    vertical = RattiSpace.sectionInner,
-                ),
-        ) {
-            Icon(
-                imageVector = tab.icon,
-                contentDescription = stringResource(tab.titleRes),
-                tint = RattiColor.Tinta,
-                modifier = Modifier.size(26.dp),
-            )
-        }
+        Icon(
+            painter = painterResource(tab.iconRes),
+            contentDescription = stringResource(tab.titleRes),
+            tint = RattiColor.Ink,
+            modifier = Modifier.size(RattiTabMetrics.icon),
+        )
     }
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun RattiAppPreview() {
     RattiTheme {
