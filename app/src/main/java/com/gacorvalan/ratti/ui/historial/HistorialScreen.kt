@@ -28,7 +28,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,9 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacorvalan.ratti.R
-import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.inicio.CargaInicio
 import com.gacorvalan.ratti.ui.inicio.InicioViewModel
@@ -68,19 +65,15 @@ private val AltoBarras = 120.dp
 private val AnchoBarra = 32.dp
 
 @Composable
-fun HistorialScreen(
-    email: String?,
+internal fun HistorialScreen(
+    inicio: InicioViewModel,
     errorSesion: String?,
     ocupado: Boolean,
     onEntrar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val modelo = viewModel { InicioViewModel(PlanillaRepositorio()) }
     val context = LocalContext.current
-    LaunchedEffect(email) {
-        modelo.sincronizar(context, email)
-    }
-    when (val carga = modelo.carga) {
+    when (val carga = inicio.carga) {
         CargaInicio.SinSesion -> HistorialAviso(modifier) {
             InicioSesion(
                 error = errorSesion,
@@ -113,7 +106,7 @@ fun HistorialScreen(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     role = Role.Button,
-                    onClick = { modelo.refrescar(context) },
+                    onClick = { inicio.refrescar(context) },
                 ),
                 style = RattiType.link,
                 color = RattiColor.Cobalt,
@@ -125,7 +118,7 @@ fun HistorialScreen(
             )
         }
         is CargaInicio.Listo -> HistorialContenido(
-            ciclos = ciclosDe(carga.historial, carga.codigoCiclo),
+            ciclos = ciclosDe(carga.finanzas.historial, carga.finanzas.ciclo.codigo),
             modifier = modifier,
         )
     }
