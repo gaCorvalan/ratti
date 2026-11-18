@@ -4,4 +4,20 @@
     <string name="tab_inicio">Inicio</string>
     <string name="tab_ahorros">Ahorros</string>
     <string name="tab_historial">Historial</string>
+    <string name="entrar_google">Entrar con Google</string>
+    <string name="entrando">Entrando…</string>
+    <string name="salir">Salir</string>
+    <string name="entraste_con">Entraste con</string>
+    <string name="error_falta_client_id">Falta el ID de cliente web. Agregalo en local.properties.</string>
+    <string name="error_cancelo_sesion">Cancelaste el inicio de sesión.</string>
+    <string name="error_sin_cuenta">No encontré una cuenta de Google en el teléfono.</string>
+    <string name="error_interrumpido">Se interrumpió el inicio de sesión. Probá de nuevo.</string>
+    <string name="error_config">Google no reconoció la app. Revisá el ID de cliente web y la huella SHA-1.</string>
+    <string name="error_red">No hay conexión. Probá de nuevo.</string>
+    <string name="error_sesion">No se pudo entrar con Google. Probá de nuevo.</string>
+    <string name="error_sin_mail">Google no devolvió el mail de la cuenta.</string>
+    <string name="error_respuesta">Google devolvió una respuesta que no pude leer.</string>
+    <string name="error_cancelo_permiso">Cancelaste el permiso para leer planillas.</string>
+    <string name="error_permiso">No se pudo pedir el permiso para leer planillas.</string>
+    <string name="error_permiso_denegado">No se concedió el permiso para leer planillas.</string>
 </resources>
