@@ -1,9 +1,8 @@
 package com.gacorvalan.ratti.ui.inicio
 
 /**
- * Valores de ejemplo para pintar Inicio.
- * No salen de la planilla: son los del frame de Figma (Inicio, `26:315`).
- * El paso 3b (y 3c) los va a reemplazar por la lectura real.
+ * Valores de ejemplo, solo para previews de Compose.
+ * Son los del frame de Figma (Inicio, `26:315`). La pantalla real no los usa.
  */
 object DatosEjemplo {
     val inicio = EstadoInicio(
@@ -58,5 +57,6 @@ object DatosEjemplo {
                 color = ColorConsumo.Naranja,
             ),
         ),
+        ejemplo = true,
     )
 }

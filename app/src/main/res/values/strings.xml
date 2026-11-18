@@ -7,6 +7,10 @@
     <string name="marca">RATTI</string>
     <string name="datos_ejemplo">Datos de ejemplo</string>
     <string name="te_quedan">TE QUEDAN</string>
+    <string name="te_pasaste">TE PASASTE</string>
+    <string name="sin_tarjetas">Todavía no hay tarjetas.</string>
+    <string name="sin_consumos">Todavía no hay consumos.</string>
+    <string name="actualizar">Actualizar</string>
     <string name="tus_tarjetas">TUS TARJETAS</string>
     <string name="ultimos_consumos">ÚLTIMOS CONSUMOS</string>
     <string name="ver_todos">VER TODOS</string>

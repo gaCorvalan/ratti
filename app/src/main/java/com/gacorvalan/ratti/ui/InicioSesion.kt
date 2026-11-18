@@ -35,6 +35,7 @@ internal fun InicioSesion(
     onEntrar: () -> Unit,
     onSalir: () -> Unit,
     onDatosCrudos: (() -> Unit)? = null,
+    onActualizar: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -58,19 +59,13 @@ internal fun InicioSesion(
                 container = RattiColor.White,
                 content = RattiColor.Ink,
             )
+            if (onActualizar != null) {
+                Spacer(Modifier.height(RattiSpace.sectionInner))
+                EnlaceSesion(texto = stringResource(R.string.actualizar), onClick = onActualizar)
+            }
             if (onDatosCrudos != null) {
                 Spacer(Modifier.height(RattiSpace.sectionInner))
-                Text(
-                    text = stringResource(R.string.datos_crudos),
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        role = Role.Button,
-                        onClick = onDatosCrudos,
-                    ),
-                    style = RattiType.link,
-                    color = RattiColor.Cobalt,
-                )
+                EnlaceSesion(texto = stringResource(R.string.datos_crudos), onClick = onDatosCrudos)
             }
         } else {
             BotonSesion(
@@ -93,6 +88,24 @@ internal fun InicioSesion(
             )
         }
     }
+}
+
+@Composable
+private fun EnlaceSesion(
+    texto: String,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = texto,
+        modifier = Modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            role = Role.Button,
+            onClick = onClick,
+        ),
+        style = RattiType.link,
+        color = RattiColor.Cobalt,
+    )
 }
 
 @Composable

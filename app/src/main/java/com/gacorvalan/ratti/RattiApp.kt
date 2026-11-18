@@ -48,8 +48,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
 import com.gacorvalan.ratti.ui.DatosCrudos
-import com.gacorvalan.ratti.ui.inicio.DatosEjemplo
-import com.gacorvalan.ratti.ui.inicio.InicioScreen
+import com.gacorvalan.ratti.ui.inicio.InicioConectado
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -90,8 +89,7 @@ fun RattiApp() {
     ) {
         when {
             verDatosCrudos -> DatosCrudos(onVolver = { verDatosCrudos = false })
-            selected == RattiTab.Inicio -> InicioScreen(
-                estado = DatosEjemplo.inicio,
+            selected == RattiTab.Inicio -> InicioConectado(
                 email = sesion.email,
                 errorSesion = sesion.error,
                 ocupado = sesion.ocupado,
