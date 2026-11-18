@@ -49,8 +49,8 @@ internal fun InicioSesion(
                 texto = stringResource(R.string.salir),
                 onClick = onSalir,
                 enabled = !ocupado,
-                container = RattiColor.Blanco,
-                content = RattiColor.Tinta,
+                container = RattiColor.White,
+                content = RattiColor.Ink,
             )
         } else {
             BotonSesion(
@@ -59,8 +59,8 @@ internal fun InicioSesion(
                 ),
                 onClick = onEntrar,
                 enabled = !ocupado,
-                container = RattiColor.Cobalto,
-                content = RattiColor.Blanco,
+                container = RattiColor.Cobalt,
+                content = RattiColor.White,
             )
         }
         if (error != null) {
@@ -104,7 +104,7 @@ private fun BotonSesion(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFF6E8, widthDp = 360)
+@Preview(showBackground = true, backgroundColor = 0xFFF8F4EB, widthDp = 360)
 @Composable
 private fun InicioSesionPreview() {
     RattiTheme {
@@ -118,7 +118,7 @@ private fun InicioSesionPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFF6E8, widthDp = 360)
+@Preview(showBackground = true, backgroundColor = 0xFFF8F4EB, widthDp = 360)
 @Composable
 private fun InicioConCuentaPreview() {
     RattiTheme {

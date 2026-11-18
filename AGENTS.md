@@ -8,3 +8,4 @@ Ratti es una app Android **solo para mirar** las finanzas de Gabriel. Lee la pla
 - Una línea por PR en `CHANGELOG.md`.
 - Textos de UI en español rioplatense.
 - El "mes" es el ciclo de tarjeta y se muestra como "Noviembre, cierra el 26/11", nunca AAAA-MM.
+- Todo cambio de UI sigue `docs/diseno-figma.md`. Si el servidor MCP de Figma está disponible, hay que leer el archivo con los node ids de esa spec. Si Figma y la spec no coinciden, manda Figma.
