@@ -43,7 +43,11 @@ import com.gacorvalan.ratti.auth.tokenParaLeerPlanillas
 import com.gacorvalan.ratti.datos.ErrorPlanilla
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.datos.ValorCrudo
+import com.gacorvalan.ratti.datos.interpretarPlanilla
+import com.gacorvalan.ratti.datos.modelo.ErrorModelo
 import com.gacorvalan.ratti.datos.numeroEnTexto
+import com.gacorvalan.ratti.datos.textoParaDepurar
+import java.time.LocalDate
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -56,7 +60,10 @@ private const val FILAS_VISIBLES = 20
 
 private sealed interface EstadoDatosCrudos {
     data object Cargando : EstadoDatosCrudos
-    data class Listo(val pestanas: Map<String, List<List<ValorCrudo?>>>) : EstadoDatosCrudos
+    data class Listo(
+        val pestanas: Map<String, List<List<ValorCrudo?>>>,
+        val resumen: String,
+    ) : EstadoDatosCrudos
     data class Fallo(val texto: TextoFallo) : EstadoDatosCrudos
 }
 
@@ -99,7 +106,12 @@ private suspend fun cargarDatos(
 ): EstadoDatosCrudos {
     return try {
         val pestanas = repositorio.leer { tokenParaLeerPlanillas(context) }
-        EstadoDatosCrudos.Listo(pestanas)
+        val resumen = try {
+            textoParaDepurar(interpretarPlanilla(pestanas, LocalDate.now()))
+        } catch (e: ErrorModelo) {
+            context.getString(R.string.error_modelo, e.message)
+        }
+        EstadoDatosCrudos.Listo(pestanas, resumen)
     } catch (e: CancellationException) {
         throw e
     } catch (e: TokenPlanillasException) {
@@ -191,6 +203,11 @@ private fun DatosCrudosContenido(
                 Enlace(texto = stringResource(R.string.reintentar), onClick = onReintentar)
             }
             is EstadoDatosCrudos.Listo -> {
+                Text(
+                    text = estado.resumen,
+                    style = RattiType.pocketCaption,
+                    color = RattiColor.Ink,
+                )
                 estado.pestanas.forEach { (nombre, filas) ->
                     PestanaCruda(
                         nombre = nombre,
@@ -328,6 +345,7 @@ private fun DatosCrudosPreview() {
                     ),
                     "Movimientos" to emptyList(),
                 ),
+                resumen = "Abril, cierra el 05/04 · faltan 4 días · gastado $40.000 · te quedan $60.000 · verde",
             ),
             abiertas = setOf("Semáforo"),
             onAlternar = {},

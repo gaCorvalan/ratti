@@ -45,6 +45,7 @@
     <string name="error_planilla_no_encontrada">No encontré la planilla.</string>
     <string name="error_planilla_http">No pude leer la planilla (error %1$s). Probá de nuevo.</string>
     <string name="error_planilla_lectura">No pude leer la planilla. Probá de nuevo.</string>
+    <string name="error_modelo">No pude armar el resumen. %1$s</string>
     <plurals name="cantidad_filas">
         <item quantity="one">%d fila</item>
         <item quantity="other">%d filas</item>

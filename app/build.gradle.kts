@@ -75,4 +75,5 @@ dependencies {
     implementation(libs.google.identity.googleid)
     implementation(libs.play.services.auth)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    testImplementation(libs.junit)
 }
