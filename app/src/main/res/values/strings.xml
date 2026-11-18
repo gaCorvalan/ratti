@@ -4,6 +4,14 @@
     <string name="tab_inicio">Inicio</string>
     <string name="tab_ahorros">Ahorros</string>
     <string name="tab_historial">Historial</string>
+    <string name="marca">RATTI</string>
+    <string name="datos_ejemplo">Datos de ejemplo</string>
+    <string name="te_quedan">TE QUEDAN</string>
+    <string name="tus_tarjetas">TUS TARJETAS</string>
+    <string name="ultimos_consumos">ÚLTIMOS CONSUMOS</string>
+    <string name="ver_todos">VER TODOS</string>
+    <string name="vence_el">VENCE EL %1$s</string>
+    <string name="micro_decorativo">今月の残高</string>
     <string name="entrar_google">Entrar con Google</string>
     <string name="entrando">Entrando…</string>
     <string name="salir">Salir</string>

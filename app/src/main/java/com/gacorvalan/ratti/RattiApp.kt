@@ -12,7 +12,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -47,7 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
-import com.gacorvalan.ratti.ui.InicioSesion
+import com.gacorvalan.ratti.ui.inicio.DatosEjemplo
+import com.gacorvalan.ratti.ui.inicio.InicioScreen
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -81,31 +81,17 @@ fun RattiApp() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(
-                    start = RattiSpace.screenMargin,
-                    end = RattiSpace.screenMargin,
-                    top = RattiSpace.sectionGap,
-                    bottom = RattiSpace.contentBottom,
-                ),
-        ) {
-            Text(
-                text = stringResource(selected.titleRes),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
+        when (selected) {
+            RattiTab.Inicio -> InicioScreen(
+                estado = DatosEjemplo.inicio,
+                email = sesion.email,
+                errorSesion = sesion.error,
+                ocupado = sesion.ocupado,
+                onEntrar = sesion.entrar,
+                onSalir = sesion.salir,
             )
-            if (selected == RattiTab.Inicio) {
-                InicioSesion(
-                    email = sesion.email,
-                    error = sesion.error,
-                    ocupado = sesion.ocupado,
-                    onEntrar = sesion.entrar,
-                    onSalir = sesion.salir,
-                    modifier = Modifier.padding(top = RattiSpace.sectionGap),
-                )
+            RattiTab.Ahorros, RattiTab.Historial -> {
+                PantallaVacia(title = stringResource(selected.titleRes))
             }
         }
         RattiTabBar(
@@ -114,6 +100,24 @@ fun RattiApp() {
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
+}
+
+@Composable
+private fun PantallaVacia(title: String) {
+    Text(
+        text = title,
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .padding(
+                start = RattiSpace.screenMargin,
+                end = RattiSpace.screenMargin,
+                top = RattiSpace.sectionGap,
+                bottom = RattiSpace.contentBottom,
+            ),
+        style = MaterialTheme.typography.headlineLarge,
+        color = MaterialTheme.colorScheme.onBackground,
+    )
 }
 
 @Composable

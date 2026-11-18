@@ -6,7 +6,7 @@
 3a. **Entrar con Google** — en curso. Inicio de sesión y permiso de solo lectura de planillas.
 3b. **Leer la planilla.** Lista cruda de filas para comprobar.
 3c. **Entender los datos.** Ciclo de tarjeta, gastos y ahorros. El mes se muestra como "Noviembre, cierra el 26/11".
-4. **Inicio.**
+4. **Inicio** — UI hecha con datos de ejemplo. Falta conectar los datos después de 3b/3c.
 5. **Detalle de tarjeta.** Consumos y cuotas, con el formato "2 de 6".
 6. **Historial.** Barras por mes contra el tope y desglose por categoría.
 7. **Ahorros.** Resumen, más Colchón, Casa · VOOG y Dólares.
