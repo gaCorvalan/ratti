@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
+import com.gacorvalan.ratti.ui.ahorros.AhorrosTab
 import com.gacorvalan.ratti.ui.inicio.InicioConectado
 import com.gacorvalan.ratti.ui.inicio.InicioViewModel
 import com.gacorvalan.ratti.ui.tarjeta.ConsumosCicloScreen
@@ -119,7 +120,11 @@ fun RattiApp() {
                     inicio = inicio,
                 )
             }
-            else -> PantallaVacia(title = stringResource(selected.titleRes))
+            RattiTab.Ahorros -> AhorrosTab(
+                inicio = inicio,
+                email = sesion.email,
+            )
+            RattiTab.Historial -> PantallaVacia(title = stringResource(selected.titleRes))
         }
         RattiTabBar(
             selected = selected,

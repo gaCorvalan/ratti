@@ -62,7 +62,7 @@ internal sealed interface CargaInicio {
     data object Cargando : CargaInicio
     data class Listo(
         val modelo: EstadoInicio,
-        /** El mismo modelo que armó [modelo]. El detalle lo lee sin volver a la planilla. */
+        /** El mismo modelo que armó [modelo]. Inicio, Ahorros y el detalle lo leen sin volver a la planilla. */
         val finanzas: ModeloFinanzas,
         val actualizando: Boolean = false,
         val aviso: String? = null,
@@ -71,8 +71,8 @@ internal sealed interface CargaInicio {
 }
 
 /**
- * Vive en la actividad. Cambiar de pestaña o abrir un detalle no la recrea
- * y no vuelve a leer la planilla.
+ * Vive en la actividad. Inicio, Ahorros y el detalle de tarjeta comparten esta instancia:
+ * cambiar de pestaña o abrir un detalle no la recrea y no vuelve a leer la planilla.
  * La primera lectura ocurre al entrar. Después, solo el gesto de tirar hacia abajo.
  */
 internal class InicioViewModel(
