@@ -46,16 +46,8 @@ internal class Grilla(val filas: List<List<ValorCrudo?>>) {
     fun tabla(vararg encabezados: String, desdeFila: Int = 1): Tabla? {
         val necesarios = encabezados.map { normalizar(it) }
         for (fila in desdeFila..filas.size) {
-            val mapa = LinkedHashMap<String, Int>()
-            val celdas = filas.getOrNull(fila - 1).orEmpty()
-            for ((columna, valor) in celdas.withIndex()) {
-                val texto = textoPlano(valor) ?: continue
-                mapa.putIfAbsent(normalizar(texto), columna)
-            }
-            val cubre = necesarios.all { requerido ->
-                mapa.keys.any { header -> claveCoincide(header, requerido) }
-            }
-            if (!cubre) continue
+            val mapa = encabezadosDe(filas.getOrNull(fila - 1).orEmpty())
+            if (!cubreEncabezados(mapa, necesarios)) continue
             val datos = if (fila >= filas.size) emptyList() else filas.drop(fila)
             return Tabla(mapa, datos)
         }
@@ -234,10 +226,36 @@ internal fun montoEnPesos(
     return ars + usd * tipoCambio
 }
 
-private fun claveCoincide(header: String, requerido: String): Boolean {
-    if (header == requerido) return true
-    if (requerido.length <= 3) return false
-    return header.contains(requerido)
+internal fun encabezadosDe(celdas: List<ValorCrudo?>): Map<String, Int> {
+    val mapa = LinkedHashMap<String, Int>()
+    for ((columna, valor) in celdas.withIndex()) {
+        val texto = textoPlano(valor) ?: continue
+        mapa.putIfAbsent(normalizar(texto), columna)
+    }
+    return mapa
+}
+
+/**
+ * Cada texto pedido tiene que coincidir con una columna distinta.
+ * Primero vale el encabezado igual; si no hay, uno más largo que lo contiene.
+ * Un título de una sola celda ("SALDOS POR BOLSILLO") no alcanza para bolsillo y saldo.
+ */
+internal fun cubreEncabezados(encabezados: Map<String, Int>, necesarios: List<String>): Boolean {
+    val usados = HashSet<Int>()
+    val sinExacto = ArrayList<String>(necesarios.size)
+    for (requerido in necesarios) {
+        val columna = encabezados[requerido]
+        if (columna != null && usados.add(columna)) continue
+        sinExacto.add(requerido)
+    }
+    for (requerido in sinExacto) {
+        if (requerido.length <= 3) return false
+        val columna = encabezados.entries.firstOrNull { (header, indice) ->
+            indice !in usados && requerido in header
+        }?.value ?: return false
+        usados.add(columna)
+    }
+    return true
 }
 
 internal fun tiene(vararg palabras: String): (String) -> Boolean {
