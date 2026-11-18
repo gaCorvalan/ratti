@@ -24,7 +24,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -41,13 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacorvalan.ratti.R
 import com.gacorvalan.ratti.auth.TokenPlanillasException
 import com.gacorvalan.ratti.auth.tokenParaLeerPlanillas
 import com.gacorvalan.ratti.datos.ErrorPlanilla
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.datos.modelo.ErrorModelo
+import com.gacorvalan.ratti.datos.modelo.ModeloFinanzas
 import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
@@ -63,6 +62,8 @@ internal sealed interface CargaInicio {
     data object Cargando : CargaInicio
     data class Listo(
         val modelo: EstadoInicio,
+        /** El mismo modelo que armó [modelo]. El detalle lo lee sin volver a la planilla. */
+        val finanzas: ModeloFinanzas,
         val actualizando: Boolean = false,
         val aviso: String? = null,
     ) : CargaInicio
@@ -70,7 +71,8 @@ internal sealed interface CargaInicio {
 }
 
 /**
- * Vive en la actividad. Cambiar de pestaña no la recrea y no vuelve a leer la planilla.
+ * Vive en la actividad. Cambiar de pestaña o abrir un detalle no la recrea
+ * y no vuelve a leer la planilla.
  * La primera lectura ocurre al entrar. Después, solo el gesto de tirar hacia abajo.
  */
 internal class InicioViewModel(
@@ -128,17 +130,15 @@ internal class InicioViewModel(
 
 @Composable
 internal fun InicioConectado(
-    email: String?,
+    inicio: InicioViewModel,
     errorSesion: String?,
     ocupado: Boolean,
     onEntrar: () -> Unit,
+    onTarjeta: (TarjetaInicio) -> Unit,
+    onVerTodos: () -> Unit,
 ) {
     val context = LocalContext.current
-    val modelo = viewModel { InicioViewModel(PlanillaRepositorio()) }
-    LaunchedEffect(email) {
-        modelo.sincronizar(context, email)
-    }
-    when (val estado = modelo.carga) {
+    when (val estado = inicio.carga) {
         CargaInicio.SinSesion -> MarcoSimple {
             InicioSesion(
                 error = errorSesion,
@@ -151,7 +151,7 @@ internal fun InicioConectado(
             Leyendo()
         }
         is CargaInicio.Error -> MarcoSimple {
-            MensajeError(estado.mensaje, onReintentar = { modelo.refrescar(context) })
+            MensajeError(estado.mensaje, onReintentar = { inicio.refrescar(context) })
             InicioSesion(
                 error = errorSesion,
                 ocupado = ocupado,
@@ -161,7 +161,9 @@ internal fun InicioConectado(
         }
         is CargaInicio.Listo -> InicioListo(
             estado = estado,
-            onRefresh = { modelo.refrescar(context) },
+            onRefresh = { inicio.refrescar(context) },
+            onTarjeta = onTarjeta,
+            onVerTodos = onVerTodos,
         )
     }
 }
@@ -170,6 +172,8 @@ internal fun InicioConectado(
 private fun InicioListo(
     estado: CargaInicio.Listo,
     onRefresh: () -> Unit,
+    onTarjeta: (TarjetaInicio) -> Unit,
+    onVerTodos: () -> Unit,
 ) {
     val pull = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -182,6 +186,8 @@ private fun InicioListo(
         InicioScreen(
             estado = estado.modelo,
             aviso = estado.aviso,
+            onTarjeta = onTarjeta,
+            onVerTodos = onVerTodos,
         )
     }
 }
@@ -277,8 +283,8 @@ private suspend fun leerInicio(
     repositorio: PlanillaRepositorio,
 ): CargaInicio {
     return try {
-        val modelo = repositorio.leerModelo(pedirToken = { tokenParaLeerPlanillas(context) })
-        CargaInicio.Listo(inicioDe(modelo))
+        val finanzas = repositorio.leerModelo(pedirToken = { tokenParaLeerPlanillas(context) })
+        CargaInicio.Listo(modelo = inicioDe(finanzas), finanzas = finanzas)
     } catch (e: CancellationException) {
         throw e
     } catch (e: TokenPlanillasException) {

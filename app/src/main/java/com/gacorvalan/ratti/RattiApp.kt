@@ -27,12 +27,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +50,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
+import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.ui.inicio.InicioConectado
+import com.gacorvalan.ratti.ui.inicio.InicioViewModel
+import com.gacorvalan.ratti.ui.tarjeta.ConsumosCicloScreen
+import com.gacorvalan.ratti.ui.tarjeta.DetalleTarjetaScreen
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -69,11 +77,22 @@ private val TabPressSpring = spring<Float>(
     stiffness = Spring.StiffnessMedium,
 )
 
+/** VER TODOS. No puede coincidir con el id de una tarjeta. */
+private const val DESTINO_CONSUMOS = "*"
+
 @Composable
 fun RattiApp() {
     var selectedName by rememberSaveable { mutableStateOf(RattiTab.Inicio.name) }
     val selected = RattiTab.valueOf(selectedName)
+    var destino by rememberSaveable { mutableStateOf<String?>(null) }
     val sesion = rememberSesionGoogle()
+    val context = LocalContext.current
+    val inicio = viewModel { InicioViewModel(PlanillaRepositorio()) }
+    LaunchedEffect(sesion.email) {
+        inicio.sincronizar(context, sesion.email)
+    }
+    val detalleAbierto = selected == RattiTab.Inicio && destino != null
+    BackHandler(enabled = detalleAbierto) { destino = null }
 
     Box(
         modifier = Modifier
@@ -81,17 +100,33 @@ fun RattiApp() {
             .background(MaterialTheme.colorScheme.background),
     ) {
         when (selected) {
-            RattiTab.Inicio -> InicioConectado(
-                email = sesion.email,
-                errorSesion = sesion.error,
-                ocupado = sesion.ocupado,
-                onEntrar = sesion.entrar,
-            )
+            RattiTab.Inicio -> when (destino) {
+                null -> InicioConectado(
+                    inicio = inicio,
+                    errorSesion = sesion.error,
+                    ocupado = sesion.ocupado,
+                    onEntrar = sesion.entrar,
+                    onTarjeta = { destino = it.id },
+                    onVerTodos = { destino = DESTINO_CONSUMOS },
+                )
+                DESTINO_CONSUMOS -> ConsumosCicloScreen(
+                    onVolver = { destino = null },
+                    inicio = inicio,
+                )
+                else -> DetalleTarjetaScreen(
+                    tarjetaId = destino.orEmpty(),
+                    onVolver = { destino = null },
+                    inicio = inicio,
+                )
+            }
             else -> PantallaVacia(title = stringResource(selected.titleRes))
         }
         RattiTabBar(
             selected = selected,
-            onSelect = { selectedName = it.name },
+            onSelect = {
+                destino = null
+                selectedName = it.name
+            },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
