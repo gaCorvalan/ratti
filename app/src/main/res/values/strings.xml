@@ -28,4 +28,29 @@
     <string name="error_cancelo_permiso">Cancelaste el permiso para leer planillas.</string>
     <string name="error_permiso">No se pudo pedir el permiso para leer planillas.</string>
     <string name="error_permiso_denegado">No se concedió el permiso para leer planillas.</string>
+    <string name="datos_crudos">Datos crudos</string>
+    <string name="volver">Volver</string>
+    <string name="leyendo_planilla">Leyendo la planilla…</string>
+    <string name="reintentar">Reintentar</string>
+    <string name="ver_filas">Ver</string>
+    <string name="ocultar_filas">Ocultar</string>
+    <string name="sin_filas">Sin filas</string>
+    <string name="fila_cruda">%1$d. %2$s</string>
+    <string name="error_planilla_prohibida">Google no dejó leer la planilla. Revisá que tu cuenta pueda verla y que la API de planillas esté habilitada.</string>
+    <string name="error_planilla_vencida">Se venció el permiso para leer la planilla. Salí y entrá de nuevo.</string>
+    <string name="error_planilla_permiso">Hay que aceptar de nuevo el permiso para leer planillas. Salí y entrá de nuevo.</string>
+    <string name="error_planilla_pestana">No encontré la pestaña «%1$s».</string>
+    <string name="error_planilla_pestana_alguna">No encontré una de las pestañas de la planilla.</string>
+    <string name="error_planilla_ilegible">La respuesta de la planilla no se pudo leer.</string>
+    <string name="error_planilla_no_encontrada">No encontré la planilla.</string>
+    <string name="error_planilla_http">No pude leer la planilla (error %1$s). Probá de nuevo.</string>
+    <string name="error_planilla_lectura">No pude leer la planilla. Probá de nuevo.</string>
+    <plurals name="cantidad_filas">
+        <item quantity="one">%d fila</item>
+        <item quantity="other">%d filas</item>
+    </plurals>
+    <plurals name="filas_mas">
+        <item quantity="one">Hay %d fila más.</item>
+        <item quantity="other">Hay %d filas más.</item>
+    </plurals>
 </resources>

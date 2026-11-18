@@ -261,6 +261,37 @@ private fun AuthorizationResult.puedeLeerPlanillas(): Boolean {
     return grantedScopes.any { it == PLANILLAS_SOLO_LECTURA }
 }
 
+/**
+ * Token vigente para leer planillas. No abre la pantalla de Google: si hay que
+ * aceptar el permiso otra vez, falla y la UI pide entrar de nuevo.
+ */
+internal suspend fun tokenParaLeerPlanillas(context: Context): String {
+    val actividad = context.buscarActividad()
+        ?: throw TokenPlanillasException(hayQueAceptar = true)
+    try {
+        val autorizacion = Identity.getAuthorizationClient(actividad)
+            .authorize(solicitudPlanillas())
+            .awaitEnActividad(actividad)
+        val token = autorizacion.accessToken?.takeIf { it.isNotBlank() }
+        if (autorizacion.hasResolution() || token == null || !autorizacion.puedeLeerPlanillas()) {
+            throw TokenPlanillasException(hayQueAceptar = true)
+        }
+        return token
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: TokenPlanillasException) {
+        throw e
+    } catch (e: Exception) {
+        if (e.codigoApi() == CODIGO_RED) throw TokenPlanillasException(sinConexion = true)
+        throw TokenPlanillasException(hayQueAceptar = true)
+    }
+}
+
+internal class TokenPlanillasException(
+    val sinConexion: Boolean = false,
+    val hayQueAceptar: Boolean = false,
+) : Exception()
+
 @StringRes
 private fun mensajeInicioSesion(error: Throwable): Int {
     return when (error) {

@@ -1,5 +1,6 @@
 # Changelog
 
+- Datos crudos: lee las pestañas de la planilla y muestra las primeras filas, solo para comprobar.
 - Inicio: tarjeta de saldo, semáforo, carrusel de tarjetas y últimos consumos, con datos de ejemplo.
 - Inicio: botón Entrar con Google, mail de la cuenta y Salir. Pide permiso de solo lectura de planillas.
 - Fundaciones de Figma: colores MONI exactos, Archivo Black y DM Sans, radios, sombra y tab bar compacta con el círculo lima que se desliza.

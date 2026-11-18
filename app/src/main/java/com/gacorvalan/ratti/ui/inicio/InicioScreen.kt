@@ -26,6 +26,7 @@ fun InicioScreen(
     ocupado: Boolean = false,
     onEntrar: (() -> Unit)? = null,
     onSalir: () -> Unit = {},
+    onDatosCrudos: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -49,6 +50,7 @@ fun InicioScreen(
                 ocupado = ocupado,
                 onEntrar = onEntrar,
                 onSalir = onSalir,
+                onDatosCrudos = onDatosCrudos,
                 modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
             )
         }
