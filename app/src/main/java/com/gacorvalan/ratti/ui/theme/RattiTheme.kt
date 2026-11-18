@@ -127,6 +127,11 @@ private val DmSans = FontFamily(
     Font(R.font.dm_sans_extrabold, FontWeight.ExtraBold),
 )
 
+/** Subconjunto OFL con el microtexto decorativo de Inicio. No es copy de producto. */
+private val NotoSansJp = FontFamily(
+    Font(R.font.noto_sans_jp_bold, FontWeight.Bold),
+)
+
 private fun archivo(size: Float, line: Float) = TextStyle(
     fontFamily = ArchivoBlack,
     fontWeight = FontWeight.Normal,
@@ -179,6 +184,15 @@ object RattiType {
 
     val overline = dm(FontWeight.ExtraBold, 11f, 14f)
     val link = dm(FontWeight.ExtraBold, 11f, 12f)
+
+    /** Noto Sans JP Bold 8/10. Microtexto decorativo de Inicio. */
+    val microJp = TextStyle(
+        fontFamily = NotoSansJp,
+        fontWeight = FontWeight.Bold,
+        fontSize = 8.sp,
+        lineHeight = 10.sp,
+        letterSpacing = 0.sp,
+    )
 }
 
 private val RattiColorScheme = lightColorScheme(

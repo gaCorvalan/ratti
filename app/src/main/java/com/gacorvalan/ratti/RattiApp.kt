@@ -36,6 +36,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.gacorvalan.ratti.ui.inicio.DatosEjemplo
+import com.gacorvalan.ratti.ui.inicio.InicioScreen
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -63,7 +65,12 @@ fun RattiApp() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        PantallaVacia(title = stringResource(selected.titleRes))
+        when (selected) {
+            RattiTab.Inicio -> InicioScreen(estado = DatosEjemplo.inicio)
+            RattiTab.Ahorros, RattiTab.Historial -> {
+                PantallaVacia(title = stringResource(selected.titleRes))
+            }
+        }
         RattiTabBar(
             selected = selected,
             onSelect = { selectedName = it.name },
