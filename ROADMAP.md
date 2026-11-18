@@ -8,5 +8,5 @@
 3c. **Entender los datos** — hecho. Ciclo, semáforo neto, tarjetas, movimientos, historial y ahorros. El mes se muestra como "Noviembre, cierra el 26/11".
 4. **Inicio conectado** — hecho. Saldo, semáforo, tarjetas y últimos consumos salen de la planilla.
 5. **Detalle de tarjeta.** Consumos y cuotas, con el formato "2 de 6".
-6. **Historial.** Barras por mes contra el tope y desglose por categoría.
+6. **Historial** — hecho. Barras por ciclo contra el tope, el mes pasado del tope en Danger y desglose por categoría, con la planilla ya cargada.
 7. **Ahorros.** Resumen, más Colchón, Casa · VOOG y Dólares.

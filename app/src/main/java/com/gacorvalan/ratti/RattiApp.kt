@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
+import com.gacorvalan.ratti.ui.historial.HistorialScreen
 import com.gacorvalan.ratti.ui.inicio.InicioConectado
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
@@ -87,7 +88,13 @@ fun RattiApp() {
                 ocupado = sesion.ocupado,
                 onEntrar = sesion.entrar,
             )
-            else -> PantallaVacia(title = stringResource(selected.titleRes))
+            RattiTab.Ahorros -> PantallaVacia(title = stringResource(selected.titleRes))
+            RattiTab.Historial -> HistorialScreen(
+                email = sesion.email,
+                errorSesion = sesion.error,
+                ocupado = sesion.ocupado,
+                onEntrar = sesion.entrar,
+            )
         }
         RattiTabBar(
             selected = selected,

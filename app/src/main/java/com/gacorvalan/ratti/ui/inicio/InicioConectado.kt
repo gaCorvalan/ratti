@@ -48,6 +48,7 @@ import com.gacorvalan.ratti.auth.tokenParaLeerPlanillas
 import com.gacorvalan.ratti.datos.ErrorPlanilla
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.datos.modelo.ErrorModelo
+import com.gacorvalan.ratti.datos.modelo.MesHistorial
 import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
@@ -65,6 +66,9 @@ internal sealed interface CargaInicio {
         val modelo: EstadoInicio,
         val actualizando: Boolean = false,
         val aviso: String? = null,
+        /** Ciclos ya leídos con el modelo. Historial los usa sin volver a la planilla. */
+        val historial: List<MesHistorial> = emptyList(),
+        val codigoCiclo: String = "",
     ) : CargaInicio
     data class Error(val mensaje: String) : CargaInicio
 }
@@ -278,7 +282,11 @@ private suspend fun leerInicio(
 ): CargaInicio {
     return try {
         val modelo = repositorio.leerModelo(pedirToken = { tokenParaLeerPlanillas(context) })
-        CargaInicio.Listo(inicioDe(modelo))
+        CargaInicio.Listo(
+            modelo = inicioDe(modelo),
+            historial = modelo.historial,
+            codigoCiclo = modelo.ciclo.codigo,
+        )
     } catch (e: CancellationException) {
         throw e
     } catch (e: TokenPlanillasException) {
