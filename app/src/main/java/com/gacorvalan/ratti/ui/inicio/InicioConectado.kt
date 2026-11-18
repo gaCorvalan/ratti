@@ -7,9 +7,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,17 +18,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +37,11 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacorvalan.ratti.R
 import com.gacorvalan.ratti.auth.TokenPlanillasException
 import com.gacorvalan.ratti.auth.tokenParaLeerPlanillas
@@ -52,6 +55,8 @@ import com.gacorvalan.ratti.ui.theme.RattiSpace
 import com.gacorvalan.ratti.ui.theme.RattiTabMetrics
 import com.gacorvalan.ratti.ui.theme.RattiType
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 internal sealed interface CargaInicio {
     data object SinSesion : CargaInicio
@@ -59,8 +64,66 @@ internal sealed interface CargaInicio {
     data class Listo(
         val modelo: EstadoInicio,
         val actualizando: Boolean = false,
+        val aviso: String? = null,
     ) : CargaInicio
     data class Error(val mensaje: String) : CargaInicio
+}
+
+/**
+ * Vive en la actividad. Cambiar de pestaña no la recrea y no vuelve a leer la planilla.
+ * La primera lectura ocurre al entrar. Después, solo el gesto de tirar hacia abajo.
+ */
+internal class InicioViewModel(
+    private val repositorio: PlanillaRepositorio,
+) : ViewModel() {
+    var carga by mutableStateOf<CargaInicio>(CargaInicio.SinSesion)
+        private set
+
+    private var emailCargado: String? = null
+    private var trabajo: Job? = null
+
+    fun sincronizar(context: Context, email: String?) {
+        if (email.isNullOrBlank()) {
+            trabajo?.cancel()
+            emailCargado = null
+            carga = CargaInicio.SinSesion
+            return
+        }
+        if (emailCargado == email && carga !is CargaInicio.SinSesion) return
+        emailCargado = email
+        leer(context, previo = null)
+    }
+
+    fun refrescar(context: Context) {
+        if (emailCargado.isNullOrBlank()) return
+        when (val actual = carga) {
+            is CargaInicio.Cargando -> return
+            is CargaInicio.Listo -> {
+                if (actual.actualizando) return
+                leer(context, previo = actual)
+            }
+            else -> leer(context, previo = null)
+        }
+    }
+
+    private fun leer(context: Context, previo: CargaInicio.Listo?) {
+        carga = if (previo != null) {
+            previo.copy(actualizando = true, aviso = null)
+        } else {
+            CargaInicio.Cargando
+        }
+        trabajo?.cancel()
+        trabajo = viewModelScope.launch {
+            val resultado = leerInicio(context, repositorio)
+            if (emailCargado == null) return@launch
+            carga = when {
+                resultado is CargaInicio.Listo -> resultado
+                previo != null && resultado is CargaInicio.Error ->
+                    previo.copy(actualizando = false, aviso = resultado.mensaje)
+                else -> resultado
+            }
+        }
+    }
 }
 
 @Composable
@@ -69,56 +132,36 @@ internal fun InicioConectado(
     errorSesion: String?,
     ocupado: Boolean,
     onEntrar: () -> Unit,
-    onSalir: () -> Unit,
-    onDatosCrudos: (() -> Unit)?,
 ) {
     val context = LocalContext.current
-    val repositorio = remember { PlanillaRepositorio() }
-    var carga by remember { mutableStateOf<CargaInicio>(CargaInicio.SinSesion) }
-    var pedido by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(email, pedido) {
-        if (email.isNullOrBlank()) {
-            carga = CargaInicio.SinSesion
-            return@LaunchedEffect
-        }
-        val previo = carga
-        carga = if (previo is CargaInicio.Listo) {
-            previo.copy(actualizando = true)
-        } else {
-            CargaInicio.Cargando
-        }
-        carga = leerInicio(context, repositorio)
+    val modelo = viewModel { InicioViewModel(PlanillaRepositorio()) }
+    LaunchedEffect(email) {
+        modelo.sincronizar(context, email)
     }
-
-    val recargar = {
-        val actual = carga
-        val enCurso = actual is CargaInicio.Cargando ||
-            (actual is CargaInicio.Listo && actual.actualizando)
-        if (!email.isNullOrBlank() && !enCurso) pedido += 1
-    }
-
-    when (val estado = carga) {
+    when (val estado = modelo.carga) {
         CargaInicio.SinSesion -> MarcoSimple {
-            BloqueSesion(email, errorSesion, ocupado, onEntrar, onSalir, onDatosCrudos, null)
+            InicioSesion(
+                error = errorSesion,
+                ocupado = ocupado,
+                onEntrar = onEntrar,
+                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+            )
         }
         CargaInicio.Cargando -> MarcoSimple {
             Leyendo()
-            BloqueSesion(email, errorSesion, ocupado, onEntrar, onSalir, onDatosCrudos, null)
         }
         is CargaInicio.Error -> MarcoSimple {
-            MensajeError(estado.mensaje, onReintentar = recargar)
-            BloqueSesion(email, errorSesion, ocupado, onEntrar, onSalir, onDatosCrudos, null)
+            MensajeError(estado.mensaje, onReintentar = { modelo.refrescar(context) })
+            InicioSesion(
+                error = errorSesion,
+                ocupado = ocupado,
+                onEntrar = onEntrar,
+                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+            )
         }
         is CargaInicio.Listo -> InicioListo(
             estado = estado,
-            onRefresh = recargar,
-            email = email,
-            errorSesion = errorSesion,
-            ocupado = ocupado,
-            onEntrar = onEntrar,
-            onSalir = onSalir,
-            onDatosCrudos = onDatosCrudos,
+            onRefresh = { modelo.refrescar(context) },
         )
     }
 }
@@ -127,12 +170,6 @@ internal fun InicioConectado(
 private fun InicioListo(
     estado: CargaInicio.Listo,
     onRefresh: () -> Unit,
-    email: String?,
-    errorSesion: String?,
-    ocupado: Boolean,
-    onEntrar: () -> Unit,
-    onSalir: () -> Unit,
-    onDatosCrudos: (() -> Unit)?,
 ) {
     val pull = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -140,34 +177,29 @@ private fun InicioListo(
         onRefresh = onRefresh,
         state = pull,
         modifier = Modifier.fillMaxSize(),
-        indicator = { IndicadorRefresh(pull, estado.actualizando) },
+        indicator = { BarraFina(pull, estado.actualizando) },
     ) {
         InicioScreen(
             estado = estado.modelo,
-            email = email,
-            errorSesion = errorSesion,
-            ocupado = ocupado,
-            onEntrar = onEntrar,
-            onSalir = onSalir,
-            onDatosCrudos = onDatosCrudos,
-            onActualizar = onRefresh,
+            aviso = estado.aviso,
         )
     }
 }
 
 @Composable
-private fun BoxScope.IndicadorRefresh(
+private fun BoxScope.BarraFina(
     estado: PullToRefreshState,
     actualizando: Boolean,
 ) {
-    PullToRefreshDefaults.Indicator(
-        state = estado,
-        isRefreshing = actualizando,
+    if (!actualizando && estado.distanceFraction <= 0f) return
+    LinearProgressIndicator(
         modifier = Modifier
             .align(Alignment.TopCenter)
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .fillMaxWidth()
+            .height(3.dp),
         color = RattiColor.Cobalt,
-        containerColor = RattiColor.White,
+        trackColor = RattiColor.Cream,
     )
 }
 
@@ -188,33 +220,10 @@ private fun MarcoSimple(contenido: @Composable () -> Unit) {
 }
 
 @Composable
-private fun BloqueSesion(
-    email: String?,
-    errorSesion: String?,
-    ocupado: Boolean,
-    onEntrar: () -> Unit,
-    onSalir: () -> Unit,
-    onDatosCrudos: (() -> Unit)?,
-    onActualizar: (() -> Unit)?,
-) {
-    InicioSesion(
-        email = email,
-        error = errorSesion,
-        ocupado = ocupado,
-        onEntrar = onEntrar,
-        onSalir = onSalir,
-        onDatosCrudos = onDatosCrudos,
-        onActualizar = onActualizar,
-        modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
-    )
-}
-
-@Composable
 private fun Leyendo() {
-    Row(
+    Column(
         modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
-        horizontalArrangement = Arrangement.spacedBy(RattiSpace.sectionInner),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(RattiSpace.sectionInner),
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(RattiTabMetrics.icon),

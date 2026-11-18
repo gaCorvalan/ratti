@@ -7,7 +7,6 @@ import com.gacorvalan.ratti.datos.modelo.ModeloFinanzas
 import com.gacorvalan.ratti.datos.modelo.Movimiento
 import com.gacorvalan.ratti.datos.modelo.ResumenCiclo
 import com.gacorvalan.ratti.datos.modelo.Tarjeta
-import com.gacorvalan.ratti.ui.theme.RattiColor
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -47,7 +46,8 @@ class MapaInicioTest {
         assertEquals(279_251L, inicio.queda)
         assertEquals(17_450L, inicio.porDia)
         assertFalse(inicio.excedido)
-        assertEquals(RattiColor.Lime, inicio.colorSemaforo)
+        assertEquals(BandaSaldo.Naranja, inicio.bandaSaldo)
+        assertEquals("QUEDA 21,5% · MENOS DEL 25%", textoEstadoSaldo(inicio))
         assertEquals(
             "Te quedan $279.251 · ~$17.450\npor día hasta el 26/11",
             captionSaldo(inicio),
@@ -80,9 +80,10 @@ class MapaInicioTest {
         )
 
         assertTrue(inicio.excedido)
-        assertEquals(1f, inicio.fraccionUsada)
-        assertEquals(RattiColor.Danger, inicio.colorSemaforo)
-        assertEquals("Te pasaste $42.000", captionSaldo(inicio))
+        assertEquals(0f, inicio.fraccionRestante)
+        assertEquals(BandaSaldo.Rojo, inicio.bandaSaldo)
+        assertEquals("Te quedan −$42.000", captionSaldo(inicio))
+        assertEquals("QUEDA −3,2% · MENOS DEL 15%", textoEstadoSaldo(inicio))
         assertFalse(captionSaldo(inicio).contains("por día"))
         assertEquals("TE PASASTE 3,2%", marcaSemaforo(inicio))
         assertFalse(textoCinta(inicio).contains("POR DÍA"))
@@ -97,7 +98,29 @@ class MapaInicioTest {
 
         assertEquals(0L, inicio.queda)
         assertTrue(inicio.excedido)
-        assertEquals(RattiColor.Danger, inicio.colorSemaforo)
+        assertEquals(BandaSaldo.Rojo, inicio.bandaSaldo)
+    }
+
+    @Test
+    fun verdeHastaCuarentaYCincoYDespuesSinColetilla() {
+        val justo = EstadoInicio(
+            saludo = "HOLA, GABRIEL.",
+            inicialAvatar = "R",
+            mes = "Noviembre",
+            cierre = "26/11",
+            usado = 845_000L,
+            tope = 1_300_000L,
+            porDia = 28_438L,
+            tarjetas = emptyList(),
+            consumos = emptyList(),
+            teQuedan = 455_000L,
+        )
+        assertEquals(BandaSaldo.Verde, justo.bandaSaldo)
+        assertEquals("QUEDA 35% · MENOS DEL 45%", textoEstadoSaldo(justo))
+
+        val holgado = justo.copy(teQuedan = 650_000L, usado = 650_000L)
+        assertEquals(BandaSaldo.Verde, holgado.bandaSaldo)
+        assertEquals("QUEDA 50%", textoEstadoSaldo(holgado))
     }
 
     @Test

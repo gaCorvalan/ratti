@@ -29,15 +29,30 @@ internal fun pesosEnteros(valor: Double): Long {
     return BigDecimal.valueOf(valor).setScale(0, RoundingMode.HALF_UP).longValueExact()
 }
 
-/** "21,5" sin el símbolo de porcentaje. */
-internal fun porcentaje(valor: Double): String = porcentajeFmt.format(valor)
+/** "21,5" o "35" si el decimal es cero. Sin el símbolo de porcentaje. */
+internal fun porcentaje(valor: Double): String {
+    val texto = porcentajeFmt.format(kotlin.math.abs(valor))
+    return if (texto.endsWith(",0")) texto.dropLast(2) else texto
+}
 
 internal fun captionSaldo(estado: EstadoInicio): String {
-    val monto = pesos(kotlin.math.abs(estado.queda))
-    val cabeza = if (estado.excedido) "Te pasaste $monto" else "Te quedan $monto"
+    val cabeza = "Te quedan ${pesos(estado.queda)}"
     if (estado.porDia == 0L) return cabeza
     val porDia = pesos(estado.porDia)
     return "$cabeza · ~$porDia\npor día hasta el ${estado.cierre}"
+}
+
+/** "QUEDA 21,5% · MENOS DEL 25%". Desde el 45 % no agrega la coletilla. */
+internal fun textoEstadoSaldo(estado: EstadoInicio): String {
+    val numero = porcentaje(estado.porcentajeRestante)
+    val conSigno = if (estado.porcentajeRestante < 0.0) "−$numero" else numero
+    val queda = "QUEDA $conSigno%"
+    val umbral = when (estado.bandaSaldo) {
+        BandaSaldo.Verde -> if (estado.porcentajeRestante >= 45.0) null else "45%"
+        BandaSaldo.Naranja -> "25%"
+        BandaSaldo.Rojo -> "15%"
+    }
+    return if (umbral == null) queda else "$queda · MENOS DEL $umbral"
 }
 
 internal fun marcaSemaforo(estado: EstadoInicio): String {

@@ -61,13 +61,6 @@ internal fun TarjetaSaldoInicio(
                     .size(116.dp)
                     .offset(x = 246.dp, y = (-58).dp),
             )
-            Image(
-                painter = painterResource(R.drawable.ic_orbe_rosa),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(82.dp)
-                    .offset(x = 278.dp, y = 70.dp),
-            )
             Box(
                 modifier = Modifier
                     .offset(x = 230.dp, y = 36.dp)
@@ -84,17 +77,16 @@ internal fun TarjetaSaldoInicio(
                 modifier = Modifier.padding(RattiSpace.cardPadding),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                val acento = if (estado.excedido) RattiColor.Danger else RattiColor.Lime
+                val banda = estado.bandaSaldo
+                val suave = banda.suave
                 Text(
-                    text = stringResource(
-                        if (estado.excedido) R.string.te_pasaste else R.string.te_quedan,
-                    ),
+                    text = stringResource(banda.pastilla),
                     modifier = Modifier
-                        .clip(RoundedCornerShape(RattiRadius.segment))
-                        .background(acento)
+                        .clip(RoundedCornerShape(RattiRadius.full))
+                        .background(banda.fondo)
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                     style = RattiType.pill,
-                    color = if (estado.excedido) RattiColor.White else RattiColor.Ink,
+                    color = banda.tinta,
                 )
                 MontoQueEntra(
                     texto = pesos(estado.queda),
@@ -107,12 +99,12 @@ internal fun TarjetaSaldoInicio(
                     modifier = Modifier
                         .width(196.dp)
                         .height(4.dp)
-                        .background(acento),
+                        .background(suave),
                 )
                 Text(
                     text = captionSaldo(estado),
-                    style = RattiType.meta,
-                    color = RattiColor.White85,
+                    style = RattiType.heroSubtitle,
+                    color = RattiColor.White,
                 )
                 SemaforoInicio(estado)
             }
@@ -174,28 +166,52 @@ private fun SemaforoInicio(estado: EstadoInicio) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
-                .clip(RoundedCornerShape(RattiRadius.track))
-                .background(RattiColor.White28),
+                .clip(RoundedCornerShape(RattiRadius.full))
+                .background(RattiColor.Black28),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(estado.fraccionUsada)
-                    .clip(RoundedCornerShape(RattiRadius.track))
-                    .background(estado.colorSemaforo),
+                    .fillMaxWidth(estado.fraccionRestante)
+                    .clip(RoundedCornerShape(RattiRadius.full))
+                    .background(estado.bandaSaldo.suave),
             )
         }
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = textoUsaste(estado),
-                style = RattiType.meta,
+                style = RattiType.heroSubtitle,
                 color = RattiColor.White,
             )
             Text(
-                text = marcaSemaforo(estado),
-                style = RattiType.captionBold,
-                color = estado.colorSemaforo,
+                text = textoEstadoSaldo(estado),
+                style = RattiType.saldoEstado,
+                color = RattiColor.White,
             )
         }
     }
 }
+
+private val BandaSaldo.pastilla: Int
+    get() = when (this) {
+        BandaSaldo.Verde -> R.string.te_quedan_disponible
+        BandaSaldo.Naranja -> R.string.te_quedan_atencion
+        BandaSaldo.Rojo -> R.string.te_quedan_bajo
+    }
+
+private val BandaSaldo.fondo: Color
+    get() = when (this) {
+        BandaSaldo.Verde -> RattiColor.SaldoVerde
+        BandaSaldo.Naranja -> RattiColor.SaldoAmbar
+        BandaSaldo.Rojo -> RattiColor.SaldoRojo
+    }
+
+private val BandaSaldo.tinta: Color
+    get() = if (this == BandaSaldo.Rojo) RattiColor.White else RattiColor.Ink
+
+private val BandaSaldo.suave: Color
+    get() = when (this) {
+        BandaSaldo.Verde -> RattiColor.SaldoVerdeSuave
+        BandaSaldo.Naranja -> RattiColor.SaldoAmbarSuave
+        BandaSaldo.Rojo -> RattiColor.SaldoRojoSuave
+    }
