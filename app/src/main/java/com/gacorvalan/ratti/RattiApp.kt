@@ -2,14 +2,21 @@ package com.gacorvalan.ratti
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -23,12 +30,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,6 +61,11 @@ private enum class RattiTab(
 }
 
 private val TabShape = RoundedCornerShape(RattiRadius.full)
+
+private val TabPressSpring = spring<Float>(
+    dampingRatio = Spring.DampingRatioLowBouncy,
+    stiffness = Spring.StiffnessMedium,
+)
 
 @Composable
 fun RattiApp() {
@@ -96,7 +110,16 @@ private fun RattiTabBar(
     onSelect: (RattiTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    val indicatorX by animateDpAsState(
+        targetValue = (RattiTabMetrics.item + RattiTabMetrics.gap) * selected.ordinal,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
+        label = "tabLima",
+    )
+
+    Box(
         modifier = modifier
             .navigationBarsPadding()
             .padding(bottom = RattiTabMetrics.aboveNavigation)
@@ -117,15 +140,24 @@ private fun RattiTabBar(
                 horizontal = RattiTabMetrics.paddingHorizontal,
                 vertical = RattiTabMetrics.paddingVertical,
             ),
-        horizontalArrangement = Arrangement.spacedBy(RattiTabMetrics.gap),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        RattiTab.entries.forEach { tab ->
-            RattiTabButton(
-                tab = tab,
-                selected = tab == selected,
-                onClick = { onSelect(tab) },
-            )
+        Box(
+            modifier = Modifier
+                .offset(x = indicatorX)
+                .size(RattiTabMetrics.item)
+                .background(RattiColor.Lime, CircleShape),
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(RattiTabMetrics.gap),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RattiTab.entries.forEach { tab ->
+                RattiTabButton(
+                    tab = tab,
+                    selected = tab == selected,
+                    onClick = { onSelect(tab) },
+                )
+            }
         }
     }
 }
@@ -136,17 +168,24 @@ private fun RattiTabButton(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.9f else 1f,
+        animationSpec = TabPressSpring,
+        label = "tabPress",
+    )
+
     Box(
         modifier = Modifier
             .size(RattiTabMetrics.item)
+            .clip(CircleShape)
             .selectable(
                 selected = selected,
                 onClick = onClick,
                 role = Role.Tab,
-            )
-            .background(
-                color = if (selected) RattiColor.Lime else Color.Transparent,
-                shape = CircleShape,
+                interactionSource = interactionSource,
+                indication = null,
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -154,7 +193,12 @@ private fun RattiTabButton(
             painter = painterResource(tab.iconRes),
             contentDescription = stringResource(tab.titleRes),
             tint = RattiColor.Ink,
-            modifier = Modifier.size(RattiTabMetrics.icon),
+            modifier = Modifier
+                .size(RattiTabMetrics.icon)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
         )
     }
 }
