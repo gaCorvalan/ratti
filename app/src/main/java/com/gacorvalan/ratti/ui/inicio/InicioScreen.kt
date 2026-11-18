@@ -45,7 +45,6 @@ fun InicioScreen(
         }
         EditorialInicio(estado = estado)
         TarjetaSaldoInicio(estado = estado)
-        // TODO(paso 5): el toque abre el detalle de la tarjeta. Hoy no navega.
         CarruselTarjetas(tarjetas = estado.tarjetas, onTarjeta = onTarjeta)
         ConsumosInicio(consumos = estado.consumos, onVerTodos = onVerTodos)
     }

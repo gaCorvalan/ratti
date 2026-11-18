@@ -19,9 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacorvalan.ratti.R
-import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.ui.inicio.CargaInicio
 import com.gacorvalan.ratti.ui.inicio.InicioViewModel
 import com.gacorvalan.ratti.ui.theme.RattiColor
@@ -33,22 +31,23 @@ import com.gacorvalan.ratti.ui.theme.RattiType
 private enum class LugarAhorro { Resumen, Colchon, Casa, Dolares }
 
 /**
- * Usa el [InicioViewModel] de la actividad. Si Inicio ya leyó la planilla,
- * cambiar a esta pestaña no dispara otra lectura.
+ * Lee el [InicioViewModel] que arma [com.gacorvalan.ratti.RattiApp].
+ * Cambiar a esta pestaña no vuelve a pedir la planilla.
  */
 @Composable
-fun AhorrosTab(email: String?) {
+internal fun AhorrosTab(
+    inicio: InicioViewModel,
+    email: String?,
+) {
     val context = LocalContext.current
-    val modelo = viewModel { InicioViewModel(PlanillaRepositorio()) }
     var lugarNombre by rememberSaveable { mutableStateOf(LugarAhorro.Resumen.name) }
     LaunchedEffect(email) {
         if (email.isNullOrBlank()) {
             lugarNombre = LugarAhorro.Resumen.name
         }
-        modelo.sincronizar(context, email)
     }
     val lugar = runCatching { LugarAhorro.valueOf(lugarNombre) }.getOrDefault(LugarAhorro.Resumen)
-    val carga = modelo.carga
+    val carga = inicio.carga
     val enDetalle = carga is CargaInicio.Listo && lugar != LugarAhorro.Resumen
     BackHandler(enabled = enDetalle) {
         lugarNombre = LugarAhorro.Resumen.name
@@ -62,7 +61,7 @@ fun AhorrosTab(email: String?) {
             Cargando()
         }
         is CargaInicio.Error -> MarcoAhorros {
-            ErrorAhorros(carga.mensaje, onReintentar = { modelo.refrescar(context) })
+            ErrorAhorros(carga.mensaje, onReintentar = { inicio.refrescar(context) })
         }
         is CargaInicio.Listo -> AhorrosListo(
             carga = carga,
@@ -80,7 +79,7 @@ private fun AhorrosListo(
     onLugar: (LugarAhorro) -> Unit,
     onVolver: () -> Unit,
 ) {
-    val resumen = resumenDe(carga.ahorros, carga.tipoCambio)
+    val resumen = resumenDe(carga.finanzas.ahorros, carga.finanzas.tipoCambio)
     when (lugar) {
         LugarAhorro.Resumen -> AhorrosScreen(
             resumen = resumen,

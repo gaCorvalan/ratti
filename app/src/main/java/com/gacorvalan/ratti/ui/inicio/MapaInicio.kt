@@ -33,8 +33,12 @@ internal fun inicioDe(modelo: ModeloFinanzas): EstadoInicio {
     )
 }
 
+/** La misma clave que usa el detalle para encontrar la tarjeta en el modelo ya cargado. */
+internal fun idTarjeta(indice: Int, marca: String): String =
+    "$indice-${marca.ifBlank { "tarjeta" }}"
+
 private fun Tarjeta.aInicio(indice: Int, cierre: String) = TarjetaInicio(
-    id = "$indice-${marca.ifBlank { "tarjeta" }}",
+    id = idTarjeta(indice, marca),
     marca = marca.ifBlank { "Tarjeta" },
     banco = "",
     monto = pesosEnteros(total),
