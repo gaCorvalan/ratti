@@ -2,6 +2,7 @@ package com.gacorvalan.ratti.ui.ahorros
 
 import com.gacorvalan.ratti.datos.modelo.Ahorros
 import com.gacorvalan.ratti.datos.modelo.AsignacionUsdc
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -97,6 +98,42 @@ class MapaAhorrosTest {
 
         assertEquals(35.0, dolares.sinAsignar, 0.001)
         assertEquals(dolares.total, dolares.objetivos.sumOf { it.monto } + dolares.sinAsignar, 0.001)
+    }
+
+    @Test
+    fun elLugarLaFechaYLaMetaLleganSiLaPlanillaLosTrae() {
+        val ahorros = ejemplo().copy(
+            dondeColchon = "Caja ejemplo",
+            dondeUsdc = "Billetera ejemplo",
+            dondeVoog = "Broker ejemplo",
+            fechaPrecioVoog = LocalDate.of(2024, 11, 10),
+            metaCasaUsd = 50.0,
+            asignacionUsdc = ejemplo().asignacionUsdc.map { asignacion ->
+                if (asignacion.fondo == "MUELAS") asignacion.copy(metaUsd = 1_500.0) else asignacion
+            },
+        )
+        val resumen = resumenDe(ahorros, 1000.0)
+
+        assertEquals("Caja ejemplo", resumen.colchon.donde)
+        assertEquals("Broker ejemplo", resumen.casa.donde)
+        assertEquals(LocalDate.of(2024, 11, 10), resumen.casa.fechaPrecio)
+        assertEquals("10/11", fechaCorta(resumen.casa.fechaPrecio!!))
+        assertEquals(50.0, resumen.casa.metaUsd!!, 0.001)
+        assertEquals("Billetera ejemplo", resumen.dolares.donde)
+        assertEquals(1_500.0, resumen.dolares.objetivos.first { it.id == "MUELAS" }.metaUsd!!, 0.001)
+        assertNull(resumen.dolares.objetivos.first { it.id == "GUSTOS" }.metaUsd)
+    }
+
+    @Test
+    fun sinLugarNiFechaNiMetaElResumenLosDejaVacios() {
+        val resumen = resumenDe(ejemplo(), 1000.0)
+
+        assertNull(resumen.colchon.donde)
+        assertNull(resumen.casa.donde)
+        assertNull(resumen.casa.fechaPrecio)
+        assertNull(resumen.casa.metaUsd)
+        assertNull(resumen.dolares.donde)
+        assertTrue(resumen.dolares.objetivos.all { it.metaUsd == null })
     }
 
     @Test
