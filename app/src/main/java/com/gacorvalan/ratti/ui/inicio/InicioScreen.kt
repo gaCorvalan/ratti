@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.theme.RattiSpace
 import com.gacorvalan.ratti.ui.theme.RattiTheme
 
@@ -20,6 +21,11 @@ fun InicioScreen(
     modifier: Modifier = Modifier,
     onTarjeta: (TarjetaInicio) -> Unit = {},
     onVerTodos: () -> Unit = {},
+    email: String? = null,
+    errorSesion: String? = null,
+    ocupado: Boolean = false,
+    onEntrar: (() -> Unit)? = null,
+    onSalir: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -36,6 +42,16 @@ fun InicioScreen(
         // TODO(paso 5): el toque abre el detalle de la tarjeta. Hoy no navega.
         CarruselTarjetas(tarjetas = estado.tarjetas, onTarjeta = onTarjeta)
         ConsumosInicio(consumos = estado.consumos, onVerTodos = onVerTodos)
+        if (onEntrar != null) {
+            InicioSesion(
+                email = email,
+                error = errorSesion,
+                ocupado = ocupado,
+                onEntrar = onEntrar,
+                onSalir = onSalir,
+                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+            )
+        }
     }
 }
 
