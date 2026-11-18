@@ -30,6 +30,17 @@ object RattiColor {
     val White = Color(0xFFFFFFFF)
     val Danger = Color(0xFFE0243A)
 
+    /** Pastilla, subrayado y barra de la tarjeta de saldo (`94:551`–`94:553`). */
+    val SaldoVerde = Color(0xFF12B886)
+    val SaldoVerdeSuave = Color(0xFFE6F9F3)
+    val SaldoAmbar = Color(0xFFC8870A)
+    val SaldoAmbarSuave = Color(0xFFFFF8E6)
+    val SaldoRojo = Color(0xFFD92D20)
+    val SaldoRojoSuave = Color(0xFFFDECEC)
+
+    /** Track del semáforo de saldo. Negro al 28%. */
+    val Black28 = Color(0x47000000)
+
     /** Monto y porcentaje cuando el mes se pasa del tope. */
     val DangerDark = Color(0xFFB5152C)
 
@@ -177,6 +188,9 @@ object RattiType {
     val pocketCaption = dm(FontWeight.Medium, 13f, 18f)
     val statusTime = dm(FontWeight.Medium, 13f, 16f)
     val heroSubtitle = dm(FontWeight.Medium, 12f, 16f)
+
+    /** Estado del semáforo de saldo. DM Sans Bold 12/16. */
+    val saldoEstado = dm(FontWeight.Bold, 12f, 16f)
     val lotNote = dm(FontWeight.Medium, 11f, 16f)
     val meta = dm(FontWeight.Medium, 11f, 14f)
     val heroLabel = dm(FontWeight.Medium, 11f, 13f)

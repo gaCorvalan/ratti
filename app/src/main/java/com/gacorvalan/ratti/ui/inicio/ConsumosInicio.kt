@@ -70,8 +70,16 @@ internal fun ConsumosInicio(
                 textAlign = TextAlign.End,
             )
         }
-        consumos.take(3).forEach { consumo ->
-            FilaConsumo(consumo)
+        if (consumos.isEmpty()) {
+            Text(
+                text = stringResource(R.string.sin_consumos),
+                style = RattiType.meta,
+                color = RattiColor.Ink72,
+            )
+        } else {
+            consumos.take(3).forEach { consumo ->
+                FilaConsumo(consumo)
+            }
         }
     }
 }
@@ -120,6 +128,8 @@ private fun FilaConsumo(consumo: ConsumoInicio) {
             text = pesos(consumo.monto),
             style = RattiType.txAmount,
             color = RattiColor.Ink,
+            maxLines = 1,
+            softWrap = false,
         )
     }
 }

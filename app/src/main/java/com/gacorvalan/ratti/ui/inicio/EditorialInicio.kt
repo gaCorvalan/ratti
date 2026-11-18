@@ -54,12 +54,15 @@ internal fun EditorialInicio(
                     text = estado.saludo,
                     style = RattiType.greeting,
                     color = RattiColor.Ink,
+                    maxLines = 2,
                 )
-                Text(
-                    text = stringResource(R.string.datos_ejemplo),
-                    style = RattiType.txMeta,
-                    color = RattiColor.Ink72,
-                )
+                if (estado.ejemplo) {
+                    Text(
+                        text = stringResource(R.string.datos_ejemplo),
+                        style = RattiType.txMeta,
+                        color = RattiColor.Ink72,
+                    )
+                }
             }
         }
         Column(
