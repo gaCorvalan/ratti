@@ -19,14 +19,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.ui.ahorros.AhorrosTab
+import com.gacorvalan.ratti.ui.historial.HistorialScreen
 import com.gacorvalan.ratti.ui.inicio.InicioConectado
 import com.gacorvalan.ratti.ui.inicio.InicioViewModel
 import com.gacorvalan.ratti.ui.tarjeta.ConsumosCicloScreen
@@ -124,7 +123,12 @@ fun RattiApp() {
                 inicio = inicio,
                 email = sesion.email,
             )
-            RattiTab.Historial -> PantallaVacia(title = stringResource(selected.titleRes))
+            RattiTab.Historial -> HistorialScreen(
+                inicio = inicio,
+                errorSesion = sesion.error,
+                ocupado = sesion.ocupado,
+                onEntrar = sesion.entrar,
+            )
         }
         RattiTabBar(
             selected = selected,
@@ -135,24 +139,6 @@ fun RattiApp() {
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
-}
-
-@Composable
-private fun PantallaVacia(title: String) {
-    Text(
-        text = title,
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(
-                start = RattiSpace.screenMargin,
-                end = RattiSpace.screenMargin,
-                top = RattiSpace.sectionGap,
-                bottom = RattiSpace.contentBottom,
-            ),
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
 }
 
 @Composable

@@ -8,5 +8,5 @@
 3c. **Entender los datos** — hecho. Ciclo, semáforo neto, tarjetas, movimientos, historial y ahorros. El mes se muestra como "Noviembre, cierra el 26/11".
 4. **Inicio conectado** — hecho. Saldo, semáforo, tarjetas y últimos consumos salen de la planilla.
 5. **Detalle de tarjeta** — hecho. Tocar Visa o Amex abre consumos y cuotas ("2 DE 6"). VER TODOS abre los consumos de todas las tarjetas. El ciclo se muestra como "Noviembre, cierra el 26/11".
-6. **Historial.** Barras por mes contra el tope y desglose por categoría.
+6. **Historial** — hecho. Barras por ciclo contra el tope, el mes pasado del tope en Danger y desglose por categoría, con la planilla ya cargada.
 7. **Ahorros** — hecho. Resumen, Colchón, Casa · VOOG y Dólares. Los pesos son el colchón, el VOOG es Casa y el USDC se reparte por monto, con Sin asignar cerrando la suma.

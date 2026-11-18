@@ -55,6 +55,12 @@
     <string name="error_planilla_http">No pude leer la planilla (error %1$s). Probá de nuevo.</string>
     <string name="error_planilla_lectura">No pude leer la planilla. Probá de nuevo.</string>
     <string name="error_modelo">No pude armar el resumen. %1$s</string>
+    <string name="historial_titulo">HISTORIAL</string>
+    <string name="historial_gasto_vs_tope">GASTO VS TOPE</string>
+    <string name="historial_tope">TOPE %1$s</string>
+    <string name="historial_vacio">Todavía no hay meses en el historial.</string>
+    <string name="historial_sin_categorias">Este mes no tiene consumos por categoría.</string>
+    <string name="historial_volver">Volver</string>
     <string name="ahorros_titulo">AHORROS</string>
     <string name="ahorros_total">TOTAL A MERCADO</string>
     <string name="ahorros_a_mercado">%1$s a mercado</string>

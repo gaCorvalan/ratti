@@ -1,5 +1,6 @@
 # Changelog
 
+- Historial: barras por ciclo contra el tope de la planilla, meses pasados en rojo y desglose por categoría.
 - Ahorros: resumen con el total, y el detalle de Colchón, Casa · VOOG y Dólares.
 - Detalle de tarjeta: al tocar Visa o Amex se ven los consumos y las cuotas del ciclo, y VER TODOS abre todos los consumos.
 - Inicio: el saldo, el semáforo y los consumos salen de la planilla y se actualizan al tirar hacia abajo.
