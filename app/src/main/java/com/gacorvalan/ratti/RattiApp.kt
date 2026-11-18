@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -45,6 +46,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.gacorvalan.ratti.auth.rememberSesionGoogle
+import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
@@ -71,37 +74,46 @@ private val TabPressSpring = spring<Float>(
 fun RattiApp() {
     var selectedName by rememberSaveable { mutableStateOf(RattiTab.Inicio.name) }
     val selected = RattiTab.valueOf(selectedName)
+    val sesion = rememberSesionGoogle()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        PantallaVacia(title = stringResource(selected.titleRes))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(
+                    start = RattiSpace.screenMargin,
+                    end = RattiSpace.screenMargin,
+                    top = RattiSpace.sectionGap,
+                    bottom = RattiSpace.contentBottom,
+                ),
+        ) {
+            Text(
+                text = stringResource(selected.titleRes),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            if (selected == RattiTab.Inicio) {
+                InicioSesion(
+                    email = sesion.email,
+                    error = sesion.error,
+                    ocupado = sesion.ocupado,
+                    onEntrar = sesion.entrar,
+                    onSalir = sesion.salir,
+                    modifier = Modifier.padding(top = RattiSpace.sectionGap),
+                )
+            }
+        }
         RattiTabBar(
             selected = selected,
             onSelect = { selectedName = it.name },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
-}
-
-@Composable
-private fun PantallaVacia(title: String) {
-    Text(
-        text = title,
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(
-                start = RattiSpace.screenMargin,
-                end = RattiSpace.screenMargin,
-                top = RattiSpace.sectionGap,
-                bottom = RattiSpace.contentBottom,
-            ),
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
 }
 
 @Composable
