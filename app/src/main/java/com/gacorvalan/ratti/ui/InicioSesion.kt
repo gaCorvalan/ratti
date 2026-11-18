@@ -1,5 +1,7 @@
 package com.gacorvalan.ratti.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -10,10 +12,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,6 +25,7 @@ import com.gacorvalan.ratti.R
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiSpace
 import com.gacorvalan.ratti.ui.theme.RattiTheme
+import com.gacorvalan.ratti.ui.theme.RattiType
 
 @Composable
 internal fun InicioSesion(
@@ -29,6 +34,7 @@ internal fun InicioSesion(
     ocupado: Boolean,
     onEntrar: () -> Unit,
     onSalir: () -> Unit,
+    onDatosCrudos: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -52,6 +58,20 @@ internal fun InicioSesion(
                 container = RattiColor.White,
                 content = RattiColor.Ink,
             )
+            if (onDatosCrudos != null) {
+                Spacer(Modifier.height(RattiSpace.sectionInner))
+                Text(
+                    text = stringResource(R.string.datos_crudos),
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        role = Role.Button,
+                        onClick = onDatosCrudos,
+                    ),
+                    style = RattiType.link,
+                    color = RattiColor.Cobalt,
+                )
+            }
         } else {
             BotonSesion(
                 texto = stringResource(

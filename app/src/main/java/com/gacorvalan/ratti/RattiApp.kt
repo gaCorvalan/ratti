@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.auth.rememberSesionGoogle
+import com.gacorvalan.ratti.ui.DatosCrudos
 import com.gacorvalan.ratti.ui.inicio.DatosEjemplo
 import com.gacorvalan.ratti.ui.inicio.InicioScreen
 import com.gacorvalan.ratti.ui.theme.RattiColor
@@ -73,30 +75,42 @@ private val TabPressSpring = spring<Float>(
 @Composable
 fun RattiApp() {
     var selectedName by rememberSaveable { mutableStateOf(RattiTab.Inicio.name) }
+    var verDatosCrudos by rememberSaveable { mutableStateOf(false) }
     val selected = RattiTab.valueOf(selectedName)
     val sesion = rememberSesionGoogle()
+
+    LaunchedEffect(sesion.email) {
+        if (sesion.email == null) verDatosCrudos = false
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        when (selected) {
-            RattiTab.Inicio -> InicioScreen(
+        when {
+            verDatosCrudos -> DatosCrudos(onVolver = { verDatosCrudos = false })
+            selected == RattiTab.Inicio -> InicioScreen(
                 estado = DatosEjemplo.inicio,
                 email = sesion.email,
                 errorSesion = sesion.error,
                 ocupado = sesion.ocupado,
                 onEntrar = sesion.entrar,
                 onSalir = sesion.salir,
+                onDatosCrudos = if (sesion.email != null) {
+                    { verDatosCrudos = true }
+                } else {
+                    null
+                },
             )
-            RattiTab.Ahorros, RattiTab.Historial -> {
-                PantallaVacia(title = stringResource(selected.titleRes))
-            }
+            else -> PantallaVacia(title = stringResource(selected.titleRes))
         }
         RattiTabBar(
             selected = selected,
-            onSelect = { selectedName = it.name },
+            onSelect = {
+                selectedName = it.name
+                verDatosCrudos = false
+            },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
