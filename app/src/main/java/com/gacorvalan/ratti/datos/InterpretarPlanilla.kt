@@ -28,6 +28,7 @@ internal fun interpretarPlanilla(
             codigoActual = ciclo.codigo,
         ),
         ahorros = interpretarAhorros(pestanas.grilla("Fondos")),
+        tipoCambio = tipoDeCambio(semaforo),
     )
 }
 

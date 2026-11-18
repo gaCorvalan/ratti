@@ -47,6 +47,7 @@ import com.gacorvalan.ratti.auth.TokenPlanillasException
 import com.gacorvalan.ratti.auth.tokenParaLeerPlanillas
 import com.gacorvalan.ratti.datos.ErrorPlanilla
 import com.gacorvalan.ratti.datos.PlanillaRepositorio
+import com.gacorvalan.ratti.datos.modelo.Ahorros
 import com.gacorvalan.ratti.datos.modelo.ErrorModelo
 import com.gacorvalan.ratti.ui.InicioSesion
 import com.gacorvalan.ratti.ui.theme.RattiColor
@@ -63,6 +64,9 @@ internal sealed interface CargaInicio {
     data object Cargando : CargaInicio
     data class Listo(
         val modelo: EstadoInicio,
+        val ahorros: Ahorros,
+        /** Cero si la planilla no trae tipo de cambio. */
+        val tipoCambio: Double,
         val actualizando: Boolean = false,
         val aviso: String? = null,
     ) : CargaInicio
@@ -70,7 +74,8 @@ internal sealed interface CargaInicio {
 }
 
 /**
- * Vive en la actividad. Cambiar de pestaña no la recrea y no vuelve a leer la planilla.
+ * Vive en la actividad. Inicio y Ahorros comparten esta instancia:
+ * cambiar de pestaña no la recrea y no vuelve a leer la planilla.
  * La primera lectura ocurre al entrar. Después, solo el gesto de tirar hacia abajo.
  */
 internal class InicioViewModel(
@@ -278,7 +283,11 @@ private suspend fun leerInicio(
 ): CargaInicio {
     return try {
         val modelo = repositorio.leerModelo(pedirToken = { tokenParaLeerPlanillas(context) })
-        CargaInicio.Listo(inicioDe(modelo))
+        CargaInicio.Listo(
+            modelo = inicioDe(modelo),
+            ahorros = modelo.ahorros,
+            tipoCambio = modelo.tipoCambio,
+        )
     } catch (e: CancellationException) {
         throw e
     } catch (e: TokenPlanillasException) {

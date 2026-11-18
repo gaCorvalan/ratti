@@ -1,5 +1,6 @@
 # Changelog
 
+- Ahorros: resumen con el total, y el detalle de Colchón, Casa · VOOG y Dólares.
 - Inicio: el saldo, el semáforo y los consumos salen de la planilla y se actualizan al tirar hacia abajo.
 - Datos: arma el modelo del ciclo, el semáforo neto, las tarjetas, los movimientos, el historial y los ahorros.
 - Datos crudos: lee las pestañas de la planilla y muestra las primeras filas, solo para comprobar.

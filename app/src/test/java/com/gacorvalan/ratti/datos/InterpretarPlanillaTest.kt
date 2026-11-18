@@ -94,6 +94,7 @@ class InterpretarPlanillaTest {
         )
         assertEquals(listOf(30.0, 10.0, 0.0, 20.0, 5.0, 35.0), modelo.ahorros.asignacionUsdc.map { it.monto })
         assertEquals(100.0, modelo.ahorros.asignacionUsdc.sumOf { it.monto }, 0.001)
+        assertEquals(1000.0, modelo.tipoCambio, 0.001)
 
         assertEquals(
             "Abril, cierra el 05/04 · faltan 4 días · gastado $40.000 · te quedan $60.000 · verde · Visa $4.500 · Amex $800",
@@ -301,6 +302,7 @@ class InterpretarPlanillaTest {
         assertEquals(listOf(0.0, 0.0), modelo.tarjetas.map { it.total })
         assertEquals(0.0, modelo.ahorros.colchonPesos, 0.001)
         assertEquals(0.0, modelo.ahorros.asignacionUsdc.sumOf { it.monto }, 0.001)
+        assertEquals(0.0, modelo.tipoCambio, 0.001)
     }
 
     private fun resumen(quedan: Number, porDia: Any? = 1111) =

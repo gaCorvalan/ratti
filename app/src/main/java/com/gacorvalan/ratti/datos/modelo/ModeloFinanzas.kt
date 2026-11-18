@@ -14,6 +14,11 @@ internal data class ModeloFinanzas(
     val ultimosMovimientos: List<Movimiento>,
     val historial: List<MesHistorial>,
     val ahorros: Ahorros,
+    /**
+     * Pesos por dólar, celda de tipo de cambio del semáforo.
+     * Cero si la planilla no lo trae: la UI no inventa un total en pesos.
+     */
+    val tipoCambio: Double = 0.0,
 )
 
 internal data class Ciclo(

@@ -9,4 +9,4 @@
 4. **Inicio conectado** — hecho. Saldo, semáforo, tarjetas y últimos consumos salen de la planilla.
 5. **Detalle de tarjeta.** Consumos y cuotas, con el formato "2 de 6".
 6. **Historial.** Barras por mes contra el tope y desglose por categoría.
-7. **Ahorros.** Resumen, más Colchón, Casa · VOOG y Dólares.
+7. **Ahorros** — hecho. Resumen, Colchón, Casa · VOOG y Dólares. Los pesos son el colchón, el VOOG es Casa y el USDC se reparte por monto, con Sin asignar cerrando la suma.
