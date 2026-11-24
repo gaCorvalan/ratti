@@ -109,11 +109,21 @@ internal data class Ahorros(
      * SIN_ASIGNAR es el total menos la suma del resto, así la asignación cierra.
      */
     val asignacionUsdc: List<AsignacionUsdc>,
+    /** "Dónde está" de cada bolsillo. Nulo si la celda viene vacía. */
+    val dondeColchon: String? = null,
+    val dondeUsdc: String? = null,
+    val dondeVoog: String? = null,
+    /** Fecha del precio a mercado del VOOG. */
+    val fechaPrecioVoog: LocalDate? = null,
+    /** Meta de Casa en dólares, si el objetivo la trae en USD. */
+    val metaCasaUsd: Double? = null,
 )
 
 internal data class AsignacionUsdc(
     val fondo: String,
     val monto: Double,
+    /** Meta del fondo en dólares. Nula si no está o no es en USD. */
+    val metaUsd: Double? = null,
 )
 
 internal sealed class ErrorModelo(message: String) : Exception(message) {
