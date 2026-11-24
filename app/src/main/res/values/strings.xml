@@ -88,8 +88,10 @@
     <string name="ahorros_papeles">%1$s papeles · 100%% a Casa</string>
     <string name="ahorros_sin_papeles">Sin papeles · 100% a Casa</string>
     <string name="ahorros_sin_meta_fija">Sin meta fija</string>
+    <string name="ahorros_meta_casa">Meta %1$s</string>
     <string name="ahorros_sin_lotes">Los lotes y la comisión no están en los datos.</string>
     <string name="ahorros_precio">a mercado · %1$s · sin fecha de cierre</string>
+    <string name="ahorros_precio_fecha">a mercado · %1$s · cierre %2$s</string>
     <string name="ahorros_sin_precio">a mercado · sin precio ni fecha de cierre</string>
     <string name="ahorros_vs_costo">%1$s (%2$s) vs costo %3$s</string>
     <string name="ahorros_sin_costo">sin costo para comparar</string>
@@ -99,7 +101,9 @@
     <string name="ahorros_fondo">FONDO</string>
     <string name="ahorros_sin_meta_etiqueta">SIN META</string>
     <string name="ahorros_meta_no_disponible">%1$s · meta no disponible</string>
+    <string name="ahorros_meta_usd">%1$s · meta %2$s</string>
     <string name="ahorros_fondo_caption">%1$s · fondo, sin meta</string>
+    <string name="ahorros_fondo_meta">%1$s · fondo, meta %2$s</string>
     <string name="ahorros_tc">TC USD %1$s.</string>
     <string name="ahorros_sin_tc">Tipo de cambio no disponible.</string>
     <string name="ahorros_entrar">Entrá con Google en Inicio para ver los ahorros.</string>

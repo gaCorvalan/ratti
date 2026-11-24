@@ -88,6 +88,16 @@ class InterpretarPlanillaTest {
         assertEquals(200.0, modelo.ahorros.voogCostoUsd, 0.001)
         assertEquals(180.0, modelo.ahorros.voogMercadoUsd, 0.001)
         assertEquals(100.0, modelo.ahorros.usdcTotal, 0.001)
+        assertEquals("Banco ejemplo", modelo.ahorros.dondeColchon)
+        assertEquals("Billetera ejemplo", modelo.ahorros.dondeUsdc)
+        assertEquals("Casa ejemplo", modelo.ahorros.dondeVoog)
+        assertEquals(LocalDate.of(2024, 4, 1), modelo.ahorros.fechaPrecioVoog)
+        assertEquals(1000.0, metaUsd(modelo.ahorros, "MUELAS"), 0.001)
+        assertEquals(200.0, metaUsd(modelo.ahorros, "ANTEOJOS"), 0.001)
+        assertEquals(100.0, metaUsd(modelo.ahorros, "FOCUS"), 0.001)
+        assertEquals(50.0, metaUsd(modelo.ahorros, "ELECTRO"), 0.001)
+        assertNull(modelo.ahorros.asignacionUsdc.first { it.fondo == "GUSTOS" }.metaUsd)
+        assertNull(modelo.ahorros.metaCasaUsd)
         assertEquals(
             listOf("MUELAS", "ANTEOJOS", "FOCUS", "ELECTRO", "GUSTOS", "SIN_ASIGNAR"),
             modelo.ahorros.asignacionUsdc.map { it.fondo },
@@ -295,6 +305,58 @@ class InterpretarPlanillaTest {
     }
 
     @Test
+    fun elTituloDeSaldosNoSeTomaComoEncabezado() {
+        val fondos = Hoja()
+            .f(4, "SALDOS POR BOLSILLO")
+            .f(
+                5,
+                "Bolsillo",
+                "Dónde está",
+                "Unidad",
+                "Saldo",
+                "Valor a costo USD",
+                "Valor a mercado USD",
+                "Notas",
+                "Fecha precio mercado",
+            )
+            .f(6, "ARS", "Caja ejemplo", "ARS", 12_500)
+            .f(7, "USDC", "Billetera ejemplo", "USD", 40, 40, 41, null, "09/11/2024")
+            .f(8, "VOOG", "Broker ejemplo", "cuotapartes", 3.0, 300, 280, null, "10/11/2024")
+            .f(11, "METAS POR OBJETIVO")
+            .f(12, "ID", "Objetivo", "Bolsillo", "Meta", "Moneda meta", "Asignado (unidad del bolsillo)")
+            .f(13, "COLCHON", "Colchon ejemplo", "ARS", 20_000, "ARS", 12_500)
+            .f(14, "MUELAS", "Muelas ejemplo", "USDC", 1_500, "USD", 10)
+            .f(15, "ANTEOJOS", "Anteojos ejemplo", "USDC", 300, "USD", 5)
+            .f(16, "FOCUS", "Focus ejemplo", "USDC", 0, "USD", 0)
+            .f(17, "ELECTRO", "Electro ejemplo", "USDC", 2_040, "USD", 8)
+            .f(18, "CASA", "Casa ejemplo", "VOOG", 50, "USD", 3)
+            .f(19, "GUSTOS", "Gustos ejemplo", "USDC", null, "ARS", 2)
+        val ahorros = modelo(hoy, semaforo(), "Fondos" to fondos).ahorros
+
+        assertTrue(ahorros.colchonPesos != 0.0)
+        assertTrue(ahorros.usdcTotal != 0.0)
+        assertTrue(ahorros.voogMercadoUsd != 0.0)
+        assertEquals(12_500.0, ahorros.colchonPesos, 0.001)
+        assertEquals(20_000.0, ahorros.metaColchon, 0.001)
+        assertEquals(40.0, ahorros.usdcTotal, 0.001)
+        assertEquals(3.0, ahorros.voogCuotapartes, 0.001)
+        assertEquals(300.0, ahorros.voogCostoUsd, 0.001)
+        assertEquals(280.0, ahorros.voogMercadoUsd, 0.001)
+        assertEquals("Caja ejemplo", ahorros.dondeColchon)
+        assertEquals("Billetera ejemplo", ahorros.dondeUsdc)
+        assertEquals("Broker ejemplo", ahorros.dondeVoog)
+        assertEquals(LocalDate.of(2024, 11, 10), ahorros.fechaPrecioVoog)
+        assertEquals(listOf(10.0, 5.0, 0.0, 8.0, 2.0, 15.0), ahorros.asignacionUsdc.map { it.monto })
+        assertEquals(1_500.0, metaUsd(ahorros, "MUELAS"), 0.001)
+        assertEquals(300.0, metaUsd(ahorros, "ANTEOJOS"), 0.001)
+        assertEquals(0.0, metaUsd(ahorros, "FOCUS"), 0.001)
+        assertEquals(2_040.0, metaUsd(ahorros, "ELECTRO"), 0.001)
+        assertNull(ahorros.asignacionUsdc.first { it.fondo == "GUSTOS" }.metaUsd)
+        assertEquals(50.0, ahorros.metaCasaUsd!!, 0.001)
+        assertEquals(40.0, ahorros.asignacionUsdc.sumOf { it.monto }, 0.001)
+    }
+
+    @Test
     fun planillaVaciaDeMasNoRompeYDejaLosAhorrosEnCero() {
         val modelo = modelo(hoy, semaforo())
         assertTrue(modelo.ultimosMovimientos.isEmpty())
@@ -313,6 +375,9 @@ class InterpretarPlanillaTest {
 
     private fun monto(mes: com.gacorvalan.ratti.datos.modelo.MesHistorial, categoria: String) =
         mes.categorias.first { it.categoria == categoria }.monto
+
+    private fun metaUsd(ahorros: com.gacorvalan.ratti.datos.modelo.Ahorros, fondo: String) =
+        ahorros.asignacionUsdc.first { it.fondo == fondo }.metaUsd!!
 
     private fun modeloCompleto() = modelo(
         hoy,
