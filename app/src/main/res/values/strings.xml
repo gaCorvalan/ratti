@@ -29,7 +29,9 @@
     <string name="vence_el">VENCE EL %1$s</string>
     <string name="micro_decorativo">今月の残高</string>
     <string name="entrar_google">Entrar con Google</string>
+    <string name="salir">Salir</string>
     <string name="entrando">Entrando…</string>
+    <string name="error_sesion_persistencia">No pude actualizar la sesión en el teléfono. Probá de nuevo.</string>
     <string name="error_falta_client_id">Falta el ID de cliente web. Agregalo en local.properties.</string>
     <string name="error_cancelo_sesion">Cancelaste el inicio de sesión.</string>
     <string name="error_sin_cuenta">No encontré una cuenta de Google en el teléfono.</string>

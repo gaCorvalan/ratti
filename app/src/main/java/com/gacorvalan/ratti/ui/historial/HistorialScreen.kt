@@ -69,17 +69,20 @@ internal fun HistorialScreen(
     inicio: InicioViewModel,
     errorSesion: String?,
     ocupado: Boolean,
+    sesionActiva: Boolean,
     onEntrar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     when (val carga = inicio.carga) {
         CargaInicio.SinSesion -> HistorialAviso(modifier) {
-            InicioSesion(
-                error = errorSesion,
-                ocupado = ocupado,
-                onEntrar = onEntrar,
-            )
+            if (!sesionActiva) {
+                InicioSesion(
+                    error = errorSesion,
+                    ocupado = ocupado,
+                    onEntrar = onEntrar,
+                )
+            }
         }
         CargaInicio.Cargando -> HistorialAviso(modifier) {
             CircularProgressIndicator(
@@ -111,11 +114,13 @@ internal fun HistorialScreen(
                 style = RattiType.link,
                 color = RattiColor.Cobalt,
             )
-            InicioSesion(
-                error = errorSesion,
-                ocupado = ocupado,
-                onEntrar = onEntrar,
-            )
+            if (!sesionActiva) {
+                InicioSesion(
+                    error = errorSesion,
+                    ocupado = ocupado,
+                    onEntrar = onEntrar,
+                )
+            }
         }
         is CargaInicio.Listo -> HistorialContenido(
             ciclos = ciclosDe(carga.finanzas.historial, carga.finanzas.ciclo.codigo),

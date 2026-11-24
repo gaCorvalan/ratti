@@ -2,20 +2,25 @@ package com.gacorvalan.ratti.ui.inicio
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gacorvalan.ratti.R
@@ -28,6 +33,7 @@ import com.gacorvalan.ratti.ui.theme.RattiType
 internal fun EditorialInicio(
     estado: EstadoInicio,
     modifier: Modifier = Modifier,
+    onSalir: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
@@ -49,19 +55,47 @@ internal fun EditorialInicio(
                 style = RattiType.editorialPill,
                 color = RattiColor.White,
             )
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = estado.saludo,
-                    style = RattiType.greeting,
-                    color = RattiColor.Ink,
-                    maxLines = 2,
-                )
-                if (estado.ejemplo) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = if (onSalir != null) Modifier.weight(1f) else Modifier,
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
                     Text(
-                        text = stringResource(R.string.datos_ejemplo),
-                        style = RattiType.txMeta,
-                        color = RattiColor.Ink72,
+                        text = estado.saludo,
+                        style = RattiType.greeting,
+                        color = RattiColor.Ink,
+                        maxLines = 2,
                     )
+                    if (estado.ejemplo) {
+                        Text(
+                            text = stringResource(R.string.datos_ejemplo),
+                            style = RattiType.txMeta,
+                            color = RattiColor.Ink72,
+                        )
+                    }
+                }
+                if (onSalir != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                role = Role.Button,
+                                onClick = onSalir,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.salir),
+                            style = RattiType.link,
+                            color = RattiColor.Cobalt,
+                        )
+                    }
                 }
             }
         }

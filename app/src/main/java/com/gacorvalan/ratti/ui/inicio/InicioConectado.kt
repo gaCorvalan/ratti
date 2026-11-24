@@ -67,7 +67,10 @@ internal sealed interface CargaInicio {
         val actualizando: Boolean = false,
         val aviso: String? = null,
     ) : CargaInicio
-    data class Error(val mensaje: String) : CargaInicio
+    data class Error(
+        val mensaje: String,
+        val requiereReingreso: Boolean = false,
+    ) : CargaInicio
 }
 
 /**
@@ -120,6 +123,7 @@ internal class InicioViewModel(
             if (emailCargado == null) return@launch
             carga = when {
                 resultado is CargaInicio.Listo -> resultado
+                resultado is CargaInicio.Error && resultado.requiereReingreso -> resultado
                 previo != null && resultado is CargaInicio.Error ->
                     previo.copy(actualizando = false, aviso = resultado.mensaje)
                 else -> resultado
@@ -133,7 +137,9 @@ internal fun InicioConectado(
     inicio: InicioViewModel,
     errorSesion: String?,
     ocupado: Boolean,
+    sesionActiva: Boolean,
     onEntrar: () -> Unit,
+    onSalir: () -> Unit,
     onTarjeta: (TarjetaInicio) -> Unit,
     onVerTodos: () -> Unit,
 ) {
@@ -151,17 +157,24 @@ internal fun InicioConectado(
             Leyendo()
         }
         is CargaInicio.Error -> MarcoSimple {
-            MensajeError(estado.mensaje, onReintentar = { inicio.refrescar(context) })
-            InicioSesion(
-                error = errorSesion,
-                ocupado = ocupado,
-                onEntrar = onEntrar,
-                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+            MensajeError(
+                mensaje = estado.mensaje,
+                onReintentar = { inicio.refrescar(context) },
+                onSalir = if (sesionActiva) onSalir else null,
             )
+            if (!sesionActiva) {
+                InicioSesion(
+                    error = errorSesion,
+                    ocupado = ocupado,
+                    onEntrar = onEntrar,
+                    modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+                )
+            }
         }
         is CargaInicio.Listo -> InicioListo(
             estado = estado,
             onRefresh = { inicio.refrescar(context) },
+            onSalir = onSalir,
             onTarjeta = onTarjeta,
             onVerTodos = onVerTodos,
         )
@@ -172,6 +185,7 @@ internal fun InicioConectado(
 private fun InicioListo(
     estado: CargaInicio.Listo,
     onRefresh: () -> Unit,
+    onSalir: () -> Unit,
     onTarjeta: (TarjetaInicio) -> Unit,
     onVerTodos: () -> Unit,
 ) {
@@ -186,6 +200,7 @@ private fun InicioListo(
         InicioScreen(
             estado = estado.modelo,
             aviso = estado.aviso,
+            onSalir = onSalir,
             onTarjeta = onTarjeta,
             onVerTodos = onVerTodos,
         )
@@ -247,6 +262,7 @@ private fun Leyendo() {
 private fun MensajeError(
     mensaje: String,
     onReintentar: () -> Unit,
+    onSalir: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -274,6 +290,19 @@ private fun MensajeError(
             style = RattiType.link,
             color = RattiColor.Cobalt,
         )
+        if (onSalir != null) {
+            Text(
+                text = stringResource(R.string.salir),
+                modifier = Modifier.clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    role = Role.Button,
+                    onClick = onSalir,
+                ),
+                style = RattiType.link,
+                color = RattiColor.Cobalt,
+            )
+        }
     }
 }
 
@@ -291,9 +320,13 @@ private suspend fun leerInicio(
             context.getString(
                 if (e.sinConexion) R.string.error_red else R.string.error_planilla_permiso,
             ),
+            requiereReingreso = e.hayQueAceptar,
         )
     } catch (e: ErrorPlanilla) {
-        CargaInicio.Error(context.getString(e.texto().id, *e.texto().args))
+        CargaInicio.Error(
+            context.getString(e.texto().id, *e.texto().args),
+            requiereReingreso = e is ErrorPlanilla.PermisoVencido,
+        )
     } catch (e: ErrorModelo) {
         CargaInicio.Error(context.getString(R.string.error_modelo, e.message.orEmpty()))
     } catch (_: Exception) {
