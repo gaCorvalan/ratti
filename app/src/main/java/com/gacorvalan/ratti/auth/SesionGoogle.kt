@@ -9,6 +9,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,9 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.GetCredentialInterruptedException
 import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
 import androidx.credentials.exceptions.NoCredentialException
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.gacorvalan.ratti.BuildConfig
 import com.gacorvalan.ratti.R
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
@@ -40,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -47,42 +52,98 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 internal const val PLANILLAS_SOLO_LECTURA =
     "https://www.googleapis.com/auth/spreadsheets.readonly"
 
+private val Context.sesionGoogleDataStore by preferencesDataStore(name = "sesion_google")
+private val EMAIL_SESION = stringPreferencesKey("email")
+
 internal data class SesionGoogle(
     val email: String?,
     val error: String?,
     val ocupado: Boolean,
+    val inicializando: Boolean,
     val entrar: () -> Unit,
     val salir: () -> Unit,
+    val requiereReingreso: () -> Unit,
 )
 
 @Composable
 internal fun rememberSesionGoogle(): SesionGoogle {
     val context = LocalContext.current
+    val contextApp = remember(context) { context.applicationContext }
     val alcance = rememberCoroutineScope()
-    var email by rememberSaveable { mutableStateOf<String?>(null) }
+    var email by remember { mutableStateOf<String?>(null) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var mailPendiente by rememberSaveable { mutableStateOf<String?>(null) }
     var ocupado by remember { mutableStateOf(false) }
+    var inicializando by remember { mutableStateOf(true) }
     val enCurso = remember { AtomicBoolean(false) }
+
+    LaunchedEffect(contextApp) {
+        try {
+            val cuenta = contextApp.emailSesionGuardado()
+                ?.trim()
+                ?.takeIf(String::isNotEmpty)
+                ?: return@LaunchedEffect
+            val clientId = BuildConfig.GOOGLE_WEB_CLIENT_ID.trim()
+            if (clientId.isBlank()) {
+                error = context.getString(R.string.error_falta_client_id)
+                return@LaunchedEffect
+            }
+            val actividad = context.buscarActividad()
+            if (actividad == null) {
+                error = context.getString(R.string.error_planilla_permiso)
+                return@LaunchedEffect
+            }
+            when (autorizarEnSilencio(actividad)) {
+                RestauracionPlanillas.Autorizada,
+                RestauracionPlanillas.SinConexion -> {
+                    email = cuenta
+                    error = null
+                }
+                RestauracionPlanillas.RequierePermiso -> {
+                    contextApp.borrarEmailSesion()
+                    error = context.getString(R.string.error_planilla_permiso)
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            error = context.getString(R.string.error_sesion_persistencia)
+        } finally {
+            inicializando = false
+        }
+    }
 
     val permiso = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
     ) { resultado ->
         enCurso.set(false)
-        ocupado = false
         val cuenta = mailPendiente
         mailPendiente = null
         when (val lectura = leerResultadoPermiso(context, resultado)) {
             PermisoPlanillas.Concedido -> {
                 if (cuenta.isNullOrBlank()) {
+                    ocupado = false
                     email = null
                     error = context.getString(R.string.error_permiso_denegado)
                 } else {
-                    email = cuenta
-                    error = null
+                    alcance.launch {
+                        try {
+                            contextApp.guardarEmailSesion(cuenta)
+                            email = cuenta
+                            error = null
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            email = null
+                            error = context.getString(R.string.error_sesion_persistencia)
+                        } finally {
+                            ocupado = false
+                        }
+                    }
                 }
             }
             is PermisoPlanillas.Fallo -> {
+                ocupado = false
                 email = null
                 error = context.getString(lectura.mensaje)
             }
@@ -93,8 +154,9 @@ internal fun rememberSesionGoogle(): SesionGoogle {
         email = email,
         error = error,
         ocupado = ocupado,
+        inicializando = inicializando,
         entrar = entrar@{
-            if (ocupado || !enCurso.compareAndSet(false, true)) return@entrar
+            if (inicializando || ocupado || !enCurso.compareAndSet(false, true)) return@entrar
             val clientId = BuildConfig.GOOGLE_WEB_CLIENT_ID.trim()
             if (clientId.isBlank()) {
                 enCurso.set(false)
@@ -156,9 +218,18 @@ internal fun rememberSesionGoogle(): SesionGoogle {
                         autorizacion.puedeLeerPlanillas() -> {
                             enCurso.set(false)
                             mailPendiente = null
-                            ocupado = false
-                            email = cuenta
-                            error = null
+                            try {
+                                contextApp.guardarEmailSesion(cuenta)
+                                ocupado = false
+                                email = cuenta
+                                error = null
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: Exception) {
+                                ocupado = false
+                                email = null
+                                error = actividad.getString(R.string.error_sesion_persistencia)
+                            }
                         }
                         else -> {
                             enCurso.set(false)
@@ -182,8 +253,16 @@ internal fun rememberSesionGoogle(): SesionGoogle {
         },
         salir = {
             alcance.launch {
+                var falloPersistencia = false
                 try {
-                    cerrarSesionGoogle(context.applicationContext)
+                    contextApp.borrarEmailSesion()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    falloPersistencia = true
+                }
+                try {
+                    cerrarSesionGoogle(contextApp)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (_: Exception) {
@@ -193,10 +272,74 @@ internal fun rememberSesionGoogle(): SesionGoogle {
                 mailPendiente = null
                 ocupado = false
                 email = null
-                error = null
+                error = if (falloPersistencia) {
+                    context.getString(R.string.error_sesion_persistencia)
+                } else {
+                    null
+                }
+            }
+        },
+        requiereReingreso = {
+            alcance.launch {
+                try {
+                    contextApp.borrarEmailSesion()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    error = context.getString(R.string.error_sesion_persistencia)
+                }
+                enCurso.set(false)
+                mailPendiente = null
+                ocupado = false
+                email = null
+                if (error == null) {
+                    error = context.getString(R.string.error_planilla_permiso)
+                }
             }
         },
     )
+}
+
+private suspend fun Context.emailSesionGuardado(): String? =
+    sesionGoogleDataStore.data.first()[EMAIL_SESION]
+
+private suspend fun Context.guardarEmailSesion(email: String) {
+    sesionGoogleDataStore.edit { preferencias ->
+        preferencias[EMAIL_SESION] = email
+    }
+}
+
+private suspend fun Context.borrarEmailSesion() {
+    sesionGoogleDataStore.edit { preferencias ->
+        preferencias.remove(EMAIL_SESION)
+    }
+}
+
+private sealed interface RestauracionPlanillas {
+    data object Autorizada : RestauracionPlanillas
+    data object SinConexion : RestauracionPlanillas
+    data object RequierePermiso : RestauracionPlanillas
+}
+
+private suspend fun autorizarEnSilencio(actividad: Activity): RestauracionPlanillas {
+    return try {
+        val autorizacion = Identity.getAuthorizationClient(actividad)
+            .authorize(solicitudPlanillas())
+            .awaitEnActividad(actividad)
+        if (!autorizacion.hasResolution() && autorizacion.puedeLeerPlanillas()) {
+            RestauracionPlanillas.Autorizada
+        } else {
+            RestauracionPlanillas.RequierePermiso
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        if (e.codigoApi() == CODIGO_RED) {
+            RestauracionPlanillas.SinConexion
+        } else {
+            RestauracionPlanillas.RequierePermiso
+        }
+    }
 }
 
 private suspend fun entrarConGoogle(context: Context, webClientId: String): String {
@@ -256,9 +399,17 @@ private fun leerResultadoPermiso(context: Context, resultado: ActivityResult): P
 }
 
 private fun AuthorizationResult.puedeLeerPlanillas(): Boolean {
+    return puedeLeerPlanillas(accessToken, grantedScopes)
+}
+
+internal fun puedeLeerPlanillas(
+    accessToken: String?,
+    grantedScopes: Iterable<String>,
+): Boolean {
     if (accessToken.isNullOrBlank()) return false
-    if (grantedScopes.isEmpty()) return true
-    return grantedScopes.any { it == PLANILLAS_SOLO_LECTURA }
+    val alcances = grantedScopes.toList()
+    if (alcances.isEmpty()) return true
+    return alcances.any { it == PLANILLAS_SOLO_LECTURA }
 }
 
 /**

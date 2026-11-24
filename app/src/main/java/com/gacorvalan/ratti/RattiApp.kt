@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,6 +26,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +55,7 @@ import com.gacorvalan.ratti.datos.PlanillaRepositorio
 import com.gacorvalan.ratti.ui.ahorros.AhorrosTab
 import com.gacorvalan.ratti.ui.historial.HistorialScreen
 import com.gacorvalan.ratti.ui.inicio.InicioConectado
+import com.gacorvalan.ratti.ui.inicio.CargaInicio
 import com.gacorvalan.ratti.ui.inicio.InicioViewModel
 import com.gacorvalan.ratti.ui.tarjeta.ConsumosCicloScreen
 import com.gacorvalan.ratti.ui.tarjeta.DetalleTarjetaScreen
@@ -59,6 +63,7 @@ import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
 import com.gacorvalan.ratti.ui.theme.RattiSpace
 import com.gacorvalan.ratti.ui.theme.RattiTabMetrics
+import com.gacorvalan.ratti.ui.theme.RattiType
 import com.gacorvalan.ratti.ui.theme.RattiTheme
 
 private enum class RattiTab(
@@ -91,6 +96,11 @@ fun RattiApp() {
     LaunchedEffect(sesion.email) {
         inicio.sincronizar(context, sesion.email)
     }
+    LaunchedEffect(inicio.carga) {
+        if ((inicio.carga as? CargaInicio.Error)?.requiereReingreso == true) {
+            sesion.requiereReingreso()
+        }
+    }
     val detalleAbierto = selected == RattiTab.Inicio && destino != null
     BackHandler(enabled = detalleAbierto) { destino = null }
 
@@ -99,13 +109,17 @@ fun RattiApp() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        when (selected) {
+        if (sesion.inicializando) {
+            CargandoSesion()
+        } else when (selected) {
             RattiTab.Inicio -> when (destino) {
                 null -> InicioConectado(
                     inicio = inicio,
                     errorSesion = sesion.error,
                     ocupado = sesion.ocupado,
+                    sesionActiva = sesion.email != null,
                     onEntrar = sesion.entrar,
+                    onSalir = sesion.salir,
                     onTarjeta = { destino = it.id },
                     onVerTodos = { destino = DESTINO_CONSUMOS },
                 )
@@ -127,6 +141,7 @@ fun RattiApp() {
                 inicio = inicio,
                 errorSesion = sesion.error,
                 ocupado = sesion.ocupado,
+                sesionActiva = sesion.email != null,
                 onEntrar = sesion.entrar,
             )
         }
@@ -137,6 +152,25 @@ fun RattiApp() {
                 selectedName = it.name
             },
             modifier = Modifier.align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@Composable
+private fun CargandoSesion() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(RattiSpace.screenMargin),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator(color = RattiColor.Cobalt)
+        Text(
+            text = androidx.compose.ui.res.stringResource(R.string.leyendo_planilla),
+            modifier = Modifier.padding(top = RattiSpace.sectionInner),
+            style = RattiType.pocketCaption,
+            color = RattiColor.Ink,
         )
     }
 }

@@ -23,6 +23,7 @@ fun InicioScreen(
     modifier: Modifier = Modifier,
     onTarjeta: (TarjetaInicio) -> Unit = {},
     onVerTodos: () -> Unit = {},
+    onSalir: (() -> Unit)? = null,
     aviso: String? = null,
 ) {
     Column(
@@ -42,7 +43,7 @@ fun InicioScreen(
                 color = RattiColor.DangerDark,
             )
         }
-        EditorialInicio(estado = estado)
+        EditorialInicio(estado = estado, onSalir = onSalir)
         TarjetaSaldoInicio(estado = estado)
         CarruselTarjetas(tarjetas = estado.tarjetas, onTarjeta = onTarjeta)
         ConsumosInicio(consumos = estado.consumos, onVerTodos = onVerTodos)
