@@ -7,7 +7,7 @@ import java.util.Locale
 
 /**
  * Pasa el modelo de la planilla al estado de Inicio.
- * El saludo y la inicial siguen el frame: la planilla no trae el nombre.
+ * El saludo sigue el frame: la planilla no trae el nombre.
  * Verde y amarillo se pintan en lima, como el semáforo del frame en rango.
  * Rojo (te quedan negativo) usa Danger, como septiembre pasado de tope.
  */
@@ -16,7 +16,6 @@ internal fun inicioDe(modelo: ModeloFinanzas): EstadoInicio {
     val resumen = modelo.resumen
     return EstadoInicio(
         saludo = "HOLA, GABRIEL.",
-        inicialAvatar = "R",
         mes = modelo.ciclo.nombreMes,
         cierre = cierre,
         usado = pesosEnteros(resumen.gastado),
