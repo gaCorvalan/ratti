@@ -40,10 +40,7 @@ internal fun DetalleColchon(
             colchon.fraccion?.let { BarraColchon(it) }
             Caption(stringResource(R.string.ahorros_cien_pesos))
         }
-        TarjetaClara {
-            Overline(stringResource(R.string.ahorros_donde))
-            Caption(stringResource(R.string.ahorros_donde_vacio))
-        }
+        TarjetaDonde(colchon.donde)
         Column(verticalArrangement = Arrangement.spacedBy(RattiSpace.sectionInner)) {
             Overline(stringResource(R.string.ahorros_movimientos))
             FilaClara {
@@ -107,13 +104,18 @@ internal fun DetalleCasa(
                     stringResource(R.string.ahorros_papeles, papeles(papeles))
                 } ?: stringResource(R.string.ahorros_sin_papeles),
             )
-            Caption(stringResource(R.string.ahorros_sin_meta_fija))
+            Caption(
+                casa.metaUsd?.let { meta ->
+                    stringResource(R.string.ahorros_meta_casa, dolares(meta))
+                } ?: stringResource(R.string.ahorros_sin_meta_fija),
+            )
             Text(
                 text = stringResource(R.string.ahorros_sin_lotes),
                 style = RattiType.lotNote,
                 color = RattiColor.Ink72,
             )
         }
+        casa.donde?.let { TarjetaDonde(it) }
     }
 }
 
@@ -132,6 +134,7 @@ internal fun DetalleDolares(
             MontoGrande(usdc(dolares.sinAsignar))
             Caption(captionSinAsignar(dolares))
         }
+        dolares.donde?.let { TarjetaDonde(it) }
         dolares.objetivos.forEach { objetivo ->
             FilaObjetivo(objetivo)
         }
@@ -169,13 +172,35 @@ private fun FilaObjetivo(objetivo: ObjetivoUi) {
                 },
             )
         }
-        Caption(
-            if (objetivo.fondo) {
-                stringResource(R.string.ahorros_fondo_caption, dolares(objetivo.monto))
-            } else {
-                stringResource(R.string.ahorros_meta_no_disponible, dolares(objetivo.monto))
-            },
-        )
+        Caption(captionObjetivo(objetivo))
+    }
+}
+
+@Composable
+private fun TarjetaDonde(lugar: String?) {
+    TarjetaClara {
+        Overline(stringResource(R.string.ahorros_donde))
+        if (lugar.isNullOrBlank()) {
+            Caption(stringResource(R.string.ahorros_donde_vacio))
+        } else {
+            Text(
+                text = lugar,
+                style = RattiType.bankName,
+                color = RattiColor.Ink,
+            )
+        }
+    }
+}
+
+@Composable
+private fun captionObjetivo(objetivo: ObjetivoUi): String {
+    val monto = dolares(objetivo.monto)
+    val meta = objetivo.metaUsd?.let(::dolares)
+    return when {
+        objetivo.fondo && meta != null -> stringResource(R.string.ahorros_fondo_meta, monto, meta)
+        objetivo.fondo -> stringResource(R.string.ahorros_fondo_caption, monto)
+        meta != null -> stringResource(R.string.ahorros_meta_usd, monto, meta)
+        else -> stringResource(R.string.ahorros_meta_no_disponible, monto)
     }
 }
 
@@ -194,7 +219,12 @@ private fun captionMeta(colchon: ColchonUi): String {
 @Composable
 private fun precioCasa(casa: CasaUi): String {
     val precio = casa.precio ?: return stringResource(R.string.ahorros_sin_precio)
-    return stringResource(R.string.ahorros_precio, dolares(precio))
+    val fecha = casa.fechaPrecio?.let(::fechaCorta)
+    return if (fecha != null) {
+        stringResource(R.string.ahorros_precio_fecha, dolares(precio), fecha)
+    } else {
+        stringResource(R.string.ahorros_precio, dolares(precio))
+    }
 }
 
 @Composable

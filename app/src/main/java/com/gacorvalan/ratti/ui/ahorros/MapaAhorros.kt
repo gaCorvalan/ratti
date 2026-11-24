@@ -8,14 +8,15 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+import java.time.LocalDate
 import java.util.Locale
 
 /**
  * Los pesos son el colchón. El VOOG es Casa, a mercado y a costo.
  * El USDC se reparte por monto entre los cinco objetivos. Sin asignar
  * es el resto, para que la suma cierre siempre. Gustos es un fondo, no una meta.
- * Lo que la planilla no trae (banco, lotes, metas en dólares, fecha del precio)
- * queda afuera: no se rellena con números de ejemplo.
+ * El lugar, la fecha del precio y la meta en dólares salen de Fondos cuando están.
+ * Lotes y comisión no están en la planilla: no se rellenan con números de ejemplo.
  */
 internal fun resumenDe(ahorros: Ahorros, tipoCambio: Double): ResumenAhorros {
     val usdMercado = suma(ahorros.voogMercadoUsd, ahorros.usdcTotal)
@@ -56,6 +57,8 @@ internal data class ColchonUi(
     val diferencia: Long?,
     val fraccion: Float?,
     val porcentaje: Double?,
+    /** Banco o lugar del bolsillo de pesos. Nulo si Fondos no lo trae. */
+    val donde: String? = null,
 )
 
 internal data class CasaUi(
@@ -67,12 +70,20 @@ internal data class CasaUi(
     val cuotapartes: Double?,
     /** Mercado dividido las cuotapartes. Nulo si no se puede. */
     val precio: Double?,
+    /** Dónde está el VOOG. Nulo si la celda está vacía. */
+    val donde: String? = null,
+    /** Fecha del precio a mercado. Nula si no está. */
+    val fechaPrecio: LocalDate? = null,
+    /** Meta de Casa en dólares. Nula si no está o no es en USD. */
+    val metaUsd: Double? = null,
 )
 
 internal data class DolaresUi(
     val total: Double,
     val sinAsignar: Double,
     val objetivos: List<ObjetivoUi>,
+    /** Dónde está el USDC. Nulo si la celda está vacía. */
+    val donde: String? = null,
 )
 
 internal data class ObjetivoUi(
@@ -81,6 +92,8 @@ internal data class ObjetivoUi(
     val monto: Double,
     /** Gustos no tiene barra ni porcentaje: es un fondo. */
     val fondo: Boolean,
+    /** Meta en dólares. Nula si Fondos no la trae en USD. */
+    val metaUsd: Double? = null,
 )
 
 private data class Definicion(val id: String, val nombre: String, val fondo: Boolean)
@@ -96,13 +109,14 @@ private val OBJETIVOS = listOf(
 private fun colchonDe(ahorros: Ahorros): ColchonUi {
     val pesos = pesosSiFinito(ahorros.colchonPesos)
     val meta = pesosSiFinito(ahorros.metaColchon)?.takeIf { it > 0L }
+    val donde = ahorros.dondeColchon?.takeIf { it.isNotBlank() }
     if (pesos == null || meta == null) {
-        return ColchonUi(pesos, meta, diferencia = null, fraccion = null, porcentaje = null)
+        return ColchonUi(pesos, meta, diferencia = null, fraccion = null, porcentaje = null, donde = donde)
     }
     val diferencia = meta - pesos
     val fraccion = (pesos.toFloat() / meta.toFloat()).coerceIn(0f, 1f)
     val porcentaje = pesos.toDouble() / meta.toDouble() * 100.0
-    return ColchonUi(pesos, meta, diferencia, fraccion, porcentaje)
+    return ColchonUi(pesos, meta, diferencia, fraccion, porcentaje, donde)
 }
 
 private fun casaDe(ahorros: Ahorros): CasaUi {
@@ -116,18 +130,30 @@ private fun casaDe(ahorros: Ahorros): CasaUi {
         null
     }
     val precio = if (mercado != null && papeles != null) mercado / papeles else null
-    return CasaUi(mercado, costo, resultado, porcentaje, papeles, precio)
+    return CasaUi(
+        mercado = mercado,
+        costo = costo,
+        resultado = resultado,
+        porcentaje = porcentaje,
+        cuotapartes = papeles,
+        precio = precio,
+        donde = ahorros.dondeVoog?.takeIf { it.isNotBlank() },
+        fechaPrecio = ahorros.fechaPrecioVoog,
+        metaUsd = ahorros.metaCasaUsd?.takeIf { it.isFinite() },
+    )
 }
 
 private fun dolaresDe(ahorros: Ahorros): DolaresUi {
-    val porId = ahorros.asignacionUsdc.associate { it.fondo to it.monto }
+    val porId = ahorros.asignacionUsdc.associateBy { it.fondo }
     val total = centavos(ahorros.usdcTotal)
     val objetivos = OBJETIVOS.map { definicion ->
+        val asignacion = porId[definicion.id]
         ObjetivoUi(
             id = definicion.id,
             nombre = definicion.nombre,
-            monto = desdeCentavos(centavos(porId[definicion.id] ?: 0.0)),
+            monto = desdeCentavos(centavos(asignacion?.monto ?: 0.0)),
             fondo = definicion.fondo,
+            metaUsd = asignacion?.metaUsd?.takeIf { it.isFinite() },
         )
     }
     val asignado = objetivos.sumOf { centavos(it.monto) }
@@ -135,6 +161,7 @@ private fun dolaresDe(ahorros: Ahorros): DolaresUi {
         total = desdeCentavos(total),
         sinAsignar = desdeCentavos(total - asignado),
         objetivos = objetivos,
+        donde = ahorros.dondeUsdc?.takeIf { it.isNotBlank() },
     )
 }
 
@@ -168,6 +195,13 @@ internal fun papeles(valor: Double): String = papelesFmt.format(valor)
 internal fun porcentajeFirmado(valor: Double): String {
     val texto = porcentaje(valor)
     return if (valor < 0.0) "−$texto%" else "$texto%"
+}
+
+/** "10/11", como en el detalle de Casa. */
+internal fun fechaCorta(fecha: LocalDate): String {
+    val dia = fecha.dayOfMonth.toString().padStart(2, '0')
+    val mes = fecha.monthValue.toString().padStart(2, '0')
+    return "$dia/$mes"
 }
 
 /** Tipo de cambio en pesos, con centavos solo si los tiene. */
