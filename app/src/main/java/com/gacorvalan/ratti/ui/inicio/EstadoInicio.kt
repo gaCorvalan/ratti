@@ -9,7 +9,6 @@ package com.gacorvalan.ratti.ui.inicio
  */
 data class EstadoInicio(
     val saludo: String,
-    val inicialAvatar: String,
     /** Nombre del ciclo, por ejemplo "Noviembre". Nunca un AAAA-MM. */
     val mes: String,
     /** Día y mes de cierre, por ejemplo "26/11". */

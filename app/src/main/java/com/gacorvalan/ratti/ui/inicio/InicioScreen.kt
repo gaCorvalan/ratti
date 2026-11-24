@@ -34,7 +34,6 @@ fun InicioScreen(
             .padding(bottom = RattiSpace.contentBottom),
         verticalArrangement = Arrangement.spacedBy(RattiSpace.sectionGap),
     ) {
-        CabeceraInicio(inicial = estado.inicialAvatar)
         if (aviso != null) {
             Text(
                 text = aviso,

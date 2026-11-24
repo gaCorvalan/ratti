@@ -7,7 +7,6 @@ package com.gacorvalan.ratti.ui.inicio
 object DatosEjemplo {
     val inicio = EstadoInicio(
         saludo = "HOLA, GABRIEL.",
-        inicialAvatar = "R",
         mes = "Noviembre",
         cierre = "26/11",
         usado = 1_020_749L,

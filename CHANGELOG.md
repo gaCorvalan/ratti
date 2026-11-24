@@ -1,5 +1,6 @@
 # Changelog
 
+- Inicio: se elimina la cabecera de marca y el contenido arranca debajo de la barra de estado.
 - Historial: barras por ciclo contra el tope de la planilla, meses pasados en rojo y desglose por categoría.
 - Ahorros: resumen con el total, y el detalle de Colchón, Casa · VOOG y Dólares.
 - Detalle de tarjeta: al tocar Visa o Amex se ven los consumos y las cuotas del ciclo, y VER TODOS abre todos los consumos.

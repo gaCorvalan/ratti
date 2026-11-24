@@ -220,7 +220,6 @@ private fun MarcoSimple(contenido: @Composable () -> Unit) {
             .padding(bottom = RattiSpace.contentBottom),
         verticalArrangement = Arrangement.spacedBy(RattiSpace.sectionGap),
     ) {
-        CabeceraInicio(inicial = "R")
         contenido()
     }
 }

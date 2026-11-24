@@ -39,7 +39,6 @@ class MapaInicioTest {
         assertEquals("Noviembre, cierra el 26/11", inicio.ciclo)
         assertFalse(inicio.ciclo.contains("2026-11"))
         assertEquals("HOLA, GABRIEL.", inicio.saludo)
-        assertEquals("R", inicio.inicialAvatar)
         assertFalse(inicio.ejemplo)
         assertEquals(1_020_749L, inicio.usado)
         assertEquals(1_300_000L, inicio.tope)
@@ -105,7 +104,6 @@ class MapaInicioTest {
     fun verdeHastaCuarentaYCincoYDespuesSinColetilla() {
         val justo = EstadoInicio(
             saludo = "HOLA, GABRIEL.",
-            inicialAvatar = "R",
             mes = "Noviembre",
             cierre = "26/11",
             usado = 845_000L,
