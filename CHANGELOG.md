@@ -1,5 +1,6 @@
 # Changelog
 
+- Android: ícono adaptable del ratoncito ahorrista, con versión monocroma.
 - Ahorros: los saldos salen del encabezado real de Fondos, y se muestran el lugar, la fecha del precio y la meta en dólares.
 - Historial: barras por ciclo contra el tope de la planilla, meses pasados en rojo y desglose por categoría.
 - Ahorros: resumen con el total, y el detalle de Colchón, Casa · VOOG y Dólares.
