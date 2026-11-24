@@ -1,5 +1,7 @@
 # Changelog
 
+- Inicio: el saldo, el semáforo y los consumos salen de la planilla y se actualizan al tirar hacia abajo.
+- Datos: arma el modelo del ciclo, el semáforo neto, las tarjetas, los movimientos, el historial y los ahorros.
 - Datos crudos: lee las pestañas de la planilla y muestra las primeras filas, solo para comprobar.
 - Inicio: tarjeta de saldo, semáforo, carrusel de tarjetas y últimos consumos, con datos de ejemplo.
 - Inicio: botón Entrar con Google, mail de la cuenta y Salir. Pide permiso de solo lectura de planillas.

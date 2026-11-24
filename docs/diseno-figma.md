@@ -275,15 +275,19 @@ Frame 390×844, vertical, clip, fondo Cream.
       - Pastilla negra 148×22, padding 5/10, radio 13. Texto White, DM Sans Bold 10/12: “NOVIEMBRE · CIERRA 26/11” *(ejemplo)*.
       - Saludo Archivo Black 26/28, Ink: “HOLA, GABRIEL.” *(ejemplo)*. Gap 8 entre pastilla y saludo.
       - Motivo a la derecha: sol 48×48 (estrella Pink + centro Tangerine 15×15) y microtexto Noto Sans JP Bold 8/10, “今月の残高” *(ejemplo decorativo)*.
-   3. **Saldo** `46:304` 390×217, vertical, gap 8.
-      - Tarjeta `26:340` 342×181, margen 24, padding 16, gap 4, **Cobalt**, radio 22, clip.
-        - Orbe Teal 116×116 en (246, −58); orbe Pink 82×82 en (278, 70); destello Lime 40×40 en (230, 36).
-        - Pastilla Lime 82×23, padding 5/10, radio 14, “TE QUEDAN” DM Sans Bold 11/13, Ink.
-        - Monto `$279.251` *(ejemplo)* Archivo Black 34/36, White.
-        - Subrayado Lime 196×4 debajo del monto, en y=83.
-        - Caption White 85%, DM Sans Medium 11/14, dos líneas: “Te quedan $279.251 · ~$17.450 por día hasta el 26/11” *(ejemplo)*.
-        - Semáforo: track 310×8, White 28%, radio 4; fill Lime **243** px (≈78,4% de 310, coherente con “usaste 78,5%”). Meta: “Usaste $1.020.749 de $1.300.000” Medium 11/14 White; “QUEDA 21,5%” Bold 11/14 Lime. *(ejemplo)*
-      - **Cinta** `26:354` 390×28, fondo Lime, texto centrado ExtraBold 11/14, Ink: “●   $17.450 POR DÍA HASTA EL 26/11   ✦   QUEDA 21,5%” *(ejemplo)*.
+   3. **Saldo** `46:304` 390×227, vertical, gap 8. Relectura el 18 de noviembre de 2026. La tarjeta es la instancia `96:500` del componente `Moni / Tarjeta de saldo` (`96:499`). En Inicio está en **Naranja**.
+      - Tarjeta 342×191, margen 24, padding 16, gap 4, **Cobalt**, radio 22, clip.
+        - Orbe Teal 116×116 en (246, −58). Destello Lime 40×40 en (230, 36). Ya no hay orbe rosa.
+        - Pastilla: padding 5/10, radio píldora (999). DM Sans Bold 11/13. El texto y el color dependen del saldo restante, no de lo gastado:
+          - Verde (`94:551`), 25 % ≤ restante < 45 %: fondo `#12B886`, texto Ink, “TE QUEDAN · DISPONIBLE”.
+          - Naranja (`94:552`), 15 % ≤ restante < 25 %: fondo `#C8870A`, texto Ink, “TE QUEDAN · ATENCIÓN”.
+          - Rojo (`94:553`), restante < 15 %: fondo `#D92D20`, texto White, “TE QUEDAN · SALDO BAJO”.
+          - Desde el 45 % el componente no tiene otra variante: se usa Verde y el estado queda en “QUEDA x%”, sin “MENOS DEL 45%”.
+        - Monto Archivo Black 34/36, White. En Naranja el ejemplo es `$279.251`.
+        - Subrayado 196×4. El color es el suave de la banda, no el de la pastilla: Verde `#E6F9F3`, Naranja `#FFF8E6`, Rojo `#FDECEC`.
+        - Caption White (no al 85 %), DM Sans Medium 12/16, dos líneas: “Te quedan $279.251 · ~$17.450 / por día hasta el 26/11” *(ejemplo de Naranja)*.
+        - Semáforo: track 310×8, negro al 28 % (`rgba(0,0,0,0.28)`), radio píldora. El fill es el **saldo restante**, en el suave de la banda. En Naranja mide **66,6** px (≈21,5 % de 310). “Usaste $1.020.749 de $1.300.000” Medium 12/16 White. Estado Bold 12/16 White: “QUEDA 21,5% · MENOS DEL 25%” en Naranja, “QUEDA 35% · MENOS DEL 45%” en Verde, “QUEDA 10% · MENOS DEL 15%” en Rojo. *(ejemplos)*
+      - **Cinta** `26:354` 390×28, fondo Lime, texto centrado ExtraBold 11/14, Ink. Releída igual: “●   $17.450 POR DÍA HASTA EL 26/11   ✦   QUEDA 21,5%” *(ejemplo)*. No usa la coletilla de la tarjeta.
    4. **Tarjetas** `26:356` 390×126, vertical, gap 8, padding izquierdo 24.
       - Título “TUS TARJETAS” Archivo Black 22/24, Ink.
       - Carrusel 366×94 (se sale 24 px a la derecha para recortar la segunda tile), horizontal, gap 12.

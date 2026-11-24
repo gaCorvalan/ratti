@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gacorvalan.ratti.R
 import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiRadius
@@ -50,15 +51,24 @@ internal fun CarruselTarjetas(
             style = RattiType.sectionTitle,
             color = RattiColor.Ink,
         )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = RattiSpace.screenMargin),
-            horizontalArrangement = Arrangement.spacedBy(RattiSpace.rowPadding),
-        ) {
-            items(tarjetas, key = { it.id }) { tarjeta ->
-                TarjetaTile(
-                    tarjeta = tarjeta,
-                    onClick = { onTarjeta(tarjeta) },
-                )
+        if (tarjetas.isEmpty()) {
+            Text(
+                text = stringResource(R.string.sin_tarjetas),
+                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+                style = RattiType.meta,
+                color = RattiColor.Ink72,
+            )
+        } else {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = RattiSpace.screenMargin),
+                horizontalArrangement = Arrangement.spacedBy(RattiSpace.rowPadding),
+            ) {
+                items(tarjetas, key = { it.id }) { tarjeta ->
+                    TarjetaTile(
+                        tarjeta = tarjeta,
+                        onClick = { onTarjeta(tarjeta) },
+                    )
+                }
             }
         }
     }
@@ -113,10 +123,12 @@ private fun TarjetaTile(
                     )
                 }
             }
-            Text(
-                text = pesos(tarjeta.monto),
-                style = RattiType.cardAmount,
+            MontoQueEntra(
+                texto = pesos(tarjeta.monto),
+                estilo = RattiType.cardAmount,
                 color = RattiColor.Ink,
+                maximo = 26.sp,
+                minimo = 16.sp,
             )
             Text(
                 text = stringResource(R.string.vence_el, tarjeta.venceEl),

@@ -1,5 +1,6 @@
 package com.gacorvalan.ratti.datos
 
+import com.gacorvalan.ratti.datos.modelo.ModeloFinanzas
 import java.io.IOException
 import java.math.BigDecimal
 import java.net.HttpURLConnection
@@ -8,6 +9,7 @@ import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
+import java.time.LocalDate
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,6 +35,12 @@ internal class PlanillaRepositorio {
             }
         }
     }
+
+    /** La planilla ya interpretada: ciclo, semáforo neto, tarjetas, movimientos, historial y ahorros. */
+    suspend fun leerModelo(
+        pedirToken: suspend () -> String,
+        hoy: LocalDate = LocalDate.now(),
+    ): ModeloFinanzas = interpretarPlanilla(leer(pedirToken), hoy)
 
     private suspend fun leerCon(token: String): Map<String, List<List<ValorCrudo?>>> {
         val json = withContext(Dispatchers.IO) { traerValores(token) }

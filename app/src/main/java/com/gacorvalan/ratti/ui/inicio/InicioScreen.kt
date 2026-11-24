@@ -10,10 +10,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Text
 import androidx.compose.ui.tooling.preview.Preview
-import com.gacorvalan.ratti.ui.InicioSesion
+import com.gacorvalan.ratti.ui.theme.RattiColor
 import com.gacorvalan.ratti.ui.theme.RattiSpace
 import com.gacorvalan.ratti.ui.theme.RattiTheme
+import com.gacorvalan.ratti.ui.theme.RattiType
 
 @Composable
 fun InicioScreen(
@@ -21,12 +23,7 @@ fun InicioScreen(
     modifier: Modifier = Modifier,
     onTarjeta: (TarjetaInicio) -> Unit = {},
     onVerTodos: () -> Unit = {},
-    email: String? = null,
-    errorSesion: String? = null,
-    ocupado: Boolean = false,
-    onEntrar: (() -> Unit)? = null,
-    onSalir: () -> Unit = {},
-    onDatosCrudos: (() -> Unit)? = null,
+    aviso: String? = null,
 ) {
     Column(
         modifier = modifier
@@ -38,22 +35,19 @@ fun InicioScreen(
         verticalArrangement = Arrangement.spacedBy(RattiSpace.sectionGap),
     ) {
         CabeceraInicio(inicial = estado.inicialAvatar)
+        if (aviso != null) {
+            Text(
+                text = aviso,
+                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
+                style = RattiType.meta,
+                color = RattiColor.DangerDark,
+            )
+        }
         EditorialInicio(estado = estado)
         TarjetaSaldoInicio(estado = estado)
         // TODO(paso 5): el toque abre el detalle de la tarjeta. Hoy no navega.
         CarruselTarjetas(tarjetas = estado.tarjetas, onTarjeta = onTarjeta)
         ConsumosInicio(consumos = estado.consumos, onVerTodos = onVerTodos)
-        if (onEntrar != null) {
-            InicioSesion(
-                email = email,
-                error = errorSesion,
-                ocupado = ocupado,
-                onEntrar = onEntrar,
-                onSalir = onSalir,
-                onDatosCrudos = onDatosCrudos,
-                modifier = Modifier.padding(horizontal = RattiSpace.screenMargin),
-            )
-        }
     }
 }
 
