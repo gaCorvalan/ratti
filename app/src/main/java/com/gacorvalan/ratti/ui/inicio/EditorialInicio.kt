@@ -55,7 +55,11 @@ internal fun EditorialInicio(
                 style = RattiType.editorialPill,
                 color = RattiColor.White,
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Column(
                     modifier = if (onSalir != null) Modifier.weight(1f) else Modifier,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
